@@ -46,7 +46,7 @@ class Board:
             [br_1, bn_1, bb_1, bq, bk, bb_2, bn_2, br_2]
         ]
 
-        # keep track of white and black king's position for helping to check for checks
+        # Keep track of the positions of both kings to aid in the detection of checks
         self.wk_pos = (0, 4)
         self.bk_pos = (7, 4)
 
@@ -58,27 +58,29 @@ class Board:
         self.state[end[0]][end[1]] = self.state[start[0]][start[1]]
         self.state[start[0]][start[1]] = None
 
-        # update king position if king moved
+        # update king's position if it moved
         if isinstance(start_square, King):
             if start_square.colour == 'W':
                 self.wk_pos = end
             else:
                 self.bk_pos = end
 
+        # if a move puts king in check then undo the move
         if self.check_if_check(start_square.colour):
-            # if a move puts king in check then undo the move
             self.state[end[0]][end[1]] = end_square
             self.state[start[0]][start[1]] = start_square
             return False
-        
+
+        # keep track of moves for king and rook for castles and of pawn for en passant
         if not update_state:
-            self.state[end[0]][end[1]] = end_square
             self.state[start[0]][start[1]] = start_square
+            self.state[end[0]][end[1]] = end_square
             if isinstance(start_square, Pawn) or isinstance(start_square, King) or isinstance(start_square, Rook):
                 self.state[start[0]][start[1]].has_moved = start_square.has_moved
             if isinstance(start_square, Pawn):
                 self.state[start[0]][start[1]].en_passant = start_square.en_passant
 
+        # Pawn promotion
         if update_state and isinstance(start_square, Pawn) and (end[0] == 7 or end[0] == 0):
             promote = None
             while promote not in ["Q", "B", "N", "R"]:
@@ -102,7 +104,8 @@ class Board:
         3- repeat 1 and 2 for rook, knight and pawn
         """
         king_pos = self.wk_pos if colour == 'W' else self.bk_pos
-        # replace king with bishop and check all moves
+
+        # replace king with bishop and check all available moves
         bishop = Bishop(colour)
         bishop.get_available_moves(king_pos, self.state)
         for square in bishop.available_moves:
@@ -127,25 +130,30 @@ class Board:
                 return True
 
         # replace king with pawn and check for capture moves
-        multipler = 1 if colour == 'W' else -1
-        pawn_position_1 = [king_pos[0] + multipler, king_pos[1] + 1]
-        pawn_position_2 = [king_pos[0] + multipler, king_pos[1] - 1]
+        multiplier = 1 if colour == 'W' else -1
+        pawn_position_1 = [king_pos[0] + multiplier, king_pos[1] + 1]
+        pawn_position_2 = [king_pos[0] + multiplier, king_pos[1] - 1]
 
+        # IndexError occurs when King moves to a border
         try:
             piece_1 = self.state[pawn_position_1[0]][pawn_position_1[1]]
-        except:
+        except IndexError:
             piece_1 = None
         try:
             piece_2 = self.state[pawn_position_2[0]][pawn_position_2[1]]
-        except:
+        except IndexError:
             piece_2 = None
 
-        if (piece_1 and piece_1.colour != colour and isinstance(piece_1, Pawn)) or (piece_2 and piece_2.colour != colour and isinstance(piece_2, Pawn)):
+        if (piece_1 and piece_1.colour != colour and isinstance(piece_1, Pawn)) or \
+                (piece_2 and piece_2.colour != colour and isinstance(piece_2, Pawn)):
             return True
 
         return False
 
     def is_there_a_move(self, colour):
+        """
+        Checks if there exists at least 1 legal move for a player
+        """
         prev_wk_pos = self.wk_pos
         prev_bk_pos = self.bk_pos
         for i in range(0, 8):
@@ -155,13 +163,10 @@ class Board:
                 if piece and piece.colour == colour:
                     # get all available moves
                     piece.get_available_moves([i, j], self.state)
-                    for move in piece.available_moves:
+                    for piece_move in piece.available_moves:
                         # if we can update the board with an available move that is
                         # used to check if a move gets the king out of check
-                        if self.update([i, j], move, update_state=False):
-                            # print(piece, move)
-                            # print(self.wk_pos)
-                            # print(self)
+                        if self.update([i, j], piece_move, update_state=False):
                             self.wk_pos = prev_wk_pos
                             self.bk_pos = prev_bk_pos
                             return True
@@ -182,14 +187,15 @@ class Board:
             rook = self.state[7][7]
             in_between_squares = [[7, 5], [7, 6]]
 
+        # can't castle is king or rook had moved
         if not king or king.is_checked or king.has_moved or not rook or rook.has_moved:
             return False
 
+        # can't castle if there are pieces in between or if the King has to move
+        # through a square that would put it in check
         prev_wk_pos = self.wk_pos
         prev_bk_pos = self.bk_pos
         for square in in_between_squares:
-            # can not castle if there are pieces in between or if the king moves through a checked square
-
             if self.state[square[0]][square[1]] or not self.update(king_pos, square, update_state=False):
                 self.wk_pos = prev_wk_pos
                 self.bk_pos = prev_bk_pos
@@ -226,9 +232,12 @@ class Board:
             rook = self.state[7][0]
             in_between_squares = [[7, 2], [7, 3]]
 
+        # can't castle is king or rook had moved
         if not king or king.is_checked or king.has_moved or not rook or rook.has_moved:
             return False
 
+        # can't castle if there are pieces in between or if the King has to move
+        # through a square that would put it in check
         prev_wk_pos = self.wk_pos
         prev_bk_pos = self.bk_pos
         for square in in_between_squares:
@@ -260,22 +269,24 @@ class Board:
     def __repr__(self):
         return "\n" + "\n".join(
             "".join(repr(piece) + " " if piece else ". " for piece in row) + " " + str(8 - col)
-            for col, row in enumerate(self.state[::-1])) + "\n\n" + " ".join(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']) + "\n"
+            for col, row in enumerate(self.state[::-1])) + "\n\n" + \
+            " ".join(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']) + "\n"
 
 
 class Piece:
     def __init__(self, colour, icon):
         self.colour = colour
         self.icon = icon
-        self.x = self.y = None
         self.available_moves = []
 
     def __repr__(self):
         return self.icon
 
-    def is_legal(self, end, board):
+    def end_square_is_legal(self, end, board):
+        """
+        Checks if the end square contains a piece of the same colour
+        """
         end_square = board[end[0]][end[1]]
-        # Piece can not move to a square where a piece of same colour exists
         return not (end_square and end_square.colour == self.colour)
 
 
@@ -289,12 +300,13 @@ class Rook(Piece):
         Rook can only move orthogonally if not blocked by other pieces
         Mathematically, only X or Y should change
         """
-        if not super().is_legal(end, board):
+        if not super().end_square_is_legal(end, board):
             return False
 
         if not(start[0] == end[0] or start[1] == end[1]):
             return False
 
+        # check all squares in between
         x_direction = y_direction = 0
         if start[0] != end[0]:
             y_direction = 1 if end[0] > start[0] else -1
@@ -302,20 +314,17 @@ class Rook(Piece):
             x_direction = 1 if end[1] > start[1] else -1
 
         for diff in range(1, abs(start[0] - end[0]) + abs(start[1] - end[1])):
-            # check all squares in between
             if board[start[0] + diff * y_direction][start[1] + diff * x_direction]:
                 return False
+
         return True
 
     def get_available_moves(self, start, board):
         self.available_moves = []
         for i in range(0, 8):
             for j in range(0, 8):
-                try:
-                    if self.is_legal(start, [i, j], board):
-                        self.available_moves.append([i, j])
-                except:
-                    continue
+                if self.is_legal(start, [i, j], board):
+                    self.available_moves.append([i, j])
 
 
 class Knight(Piece):
@@ -324,7 +333,7 @@ class Knight(Piece):
 
     def is_legal(self, start, end, board):
         """
-        a knight move one square diagonally and one move orthogonally in
+        Knights move one square diagonally and one move orthogonally in
         the same direction
 
         Mathematically a knight's move works like this:
@@ -335,7 +344,7 @@ class Knight(Piece):
         whereas if end is 3,5 the difference is (-1,+1) which is not valid
         the sign does not matter
         """
-        if not super().is_legal(end, board):
+        if not super().end_square_is_legal(end, board):
             return False
 
         if not abs((start[0] - end[0]) * (start[1] - end[1])) == 2:
@@ -347,11 +356,8 @@ class Knight(Piece):
         self.available_moves = []
         for i in range(0, 8):
             for j in range(0, 8):
-                try:
-                    if self.is_legal(list(start), [i, j], board):
-                        self.available_moves.append([i, j])
-                except:
-                    continue
+                if self.is_legal(list(start), [i, j], board):
+                    self.available_moves.append([i, j])
 
 
 class Bishop(Piece):
@@ -363,7 +369,7 @@ class Bishop(Piece):
         Bishop can only move diagonally if not blocked by other pieces
         Mathematically, both X and Y should have same difference
         """
-        if not super().is_legal(end, board):
+        if not super().end_square_is_legal(end, board):
             return False
 
         if abs(start[0] - end[0]) != abs(start[1] - end[1]):
@@ -376,17 +382,15 @@ class Bishop(Piece):
         for diff in range(1, abs(start[0] - end[0])):
             if board[start[0] + diff * y_direction][start[1] + diff * x_direction]:
                 return False
+
         return True
 
     def get_available_moves(self, start, board):
         self.available_moves = []
         for i in range(0, 8):
             for j in range(0, 8):
-                try:
-                    if self.is_legal(start, [i, j], board):
-                        self.available_moves.append([i, j])
-                except:
-                    continue
+                if self.is_legal(start, [i, j], board):
+                    self.available_moves.append([i, j])
 
 
 class Queen(Piece):
@@ -398,7 +402,7 @@ class Queen(Piece):
         Queen can move diagonally and orthogonally
         basically a bishop or a rook move
         """
-        if not super().is_legal(end, board):
+        if not super().end_square_is_legal(end, board):
             return False
 
         rook = Rook(self.colour)
@@ -413,11 +417,8 @@ class Queen(Piece):
         self.available_moves = []
         for i in range(0, 8):
             for j in range(0, 8):
-                try:
-                    if self.is_legal(start, [i, j], board):
-                        self.available_moves.append([i, j])
-                except:
-                    continue
+                if self.is_legal(start, [i, j], board):
+                    self.available_moves.append([i, j])
 
 
 class King(Piece):
@@ -430,7 +431,7 @@ class King(Piece):
         """
         King can move one square in any direction that is not in check
         """
-        if not super().is_legal(end, board):
+        if not super().end_square_is_legal(end, board):
             return False
 
         if not (abs(start[0] - end[0]) <= 1 and abs(start[1] - end[1]) <= 1):
@@ -443,11 +444,8 @@ class King(Piece):
         
         for i in range(0, 8):
             for j in range(0, 8):
-                try:
-                    if self.is_legal(start, [i, j], board):
-                        self.available_moves.append([i, j])
-                except:
-                    continue
+                if self.is_legal(start, [i, j], board):
+                    self.available_moves.append([i, j])
 
 
 class Pawn(Piece):
@@ -457,26 +455,29 @@ class Pawn(Piece):
         super().__init__(colour, "♟" if colour == 'W' else '♙')
 
     def is_legal(self, start, end, board, is_test=False):
-        if not super().is_legal(end, board):
+        if not super().end_square_is_legal(end, board):
             return False
 
-        if self.colour == 'B':
-            diff_multiplier = -1
-        else:
+        if self.colour == 'W':
             diff_multiplier = 1
+        else:
+            diff_multiplier = -1
 
-        # first move of pawn can move up to two squares
-        if start[1] == end[1] and (end[0] - start[0]) * diff_multiplier in [1, 2] and not self.has_moved and not board[end[0]][end[1]]:
-            if (end[0] - start[0]) * diff_multiplier == 2:
-                self.en_passant = True
+        # first move of a pawn can move up to two squares
+        if start[1] == end[1] and (end[0] - start[0]) * diff_multiplier == 2 and not self.has_moved and \
+                not board[end[0]][end[1]] and not board[end[0] - diff_multiplier][end[1]]:
+            self.en_passant = True
             return True
+
+        # the pawn moves one step further
         elif start[1] == end[1] and (end[0] - start[0]) * diff_multiplier == 1 and not board[end[0]][end[1]]:
-            # it is not a capture move and the pawn has already moved
             return True
-        
+
+        # capture, including en passant
         elif board[end[0]][end[1]] or (isinstance(board[end[0] - diff_multiplier][end[1]], Pawn) and board[
                 end[0] - diff_multiplier][end[1]].colour != self.colour and board[
                 end[0] - diff_multiplier][end[1]].en_passant):
+
             # there is a piece at end position then check if valid capture
             if abs(start[1] - end[1]) == (end[0] - start[0]) * diff_multiplier == 1:
                 if not is_test and (end[0] == 5 or end[0] == 2):
@@ -489,11 +490,8 @@ class Pawn(Piece):
         self.available_moves = []
         for i in range(0, 8):
             for j in range(0, 8):
-                try:
-                    if self.is_legal(start, [i, j], board, is_test=True):
-                        self.available_moves.append([i, j])
-                except:
-                    continue
+                if self.is_legal(start, [i, j], board, is_test=True):
+                    self.available_moves.append([i, j])
 
 
 class Game:
@@ -557,8 +555,7 @@ class Game:
             return False
 
         if piece_to_move.colour != self.turn:
-            print(
-                f"Invalid Move: It is {'White' if self.turn == 'W' else 'Black'}'s turn")
+            print(f"Invalid Move: It is {'White' if self.turn == 'W' else 'Black'}'s turn")
             return False
 
         if not piece_to_move.is_legal(start_pos, end_pos, self.board.state):
@@ -612,30 +609,36 @@ if __name__ == '__main__':
 
         game.change_turn()
 
+        # if the move is a check
         if game.board.check_if_check(game.turn):
 
             if game.turn == 'W':
-                game.board.state[game.board.wk_pos[0]
-                                 ][game.board.wk_pos[1]].is_checked = True
+                game.board.state[game.board.wk_pos[0]][game.board.wk_pos[1]].is_checked = True
             else:
-                game.board.state[game.board.bk_pos[0]
-                                 ][game.board.bk_pos[1]].is_checked = True
-            print(f"{game.turn} king is in check")
+                game.board.state[game.board.bk_pos[0]][game.board.bk_pos[1]].is_checked = True
+
+            # checkmate if no available moves
             if not game.board.is_there_a_move(game.turn):
+                print(game.board)
                 if game.turn == 'W':
-                    print("Black checkmated, White won!")
-                    break
-                else:
                     print("White checkmated, Black won!")
                     break
+                else:
+                    print("Black checkmated, White won!")
+                    break
+
+            print(f"{game.turn} king is in check")
+
+        # if the move is not a check
         else:
             if game.turn == 'W':
-                game.board.state[game.board.wk_pos[0]
-                                 ][game.board.wk_pos[1]].is_checked = False
+                game.board.state[game.board.wk_pos[0]][game.board.wk_pos[1]].is_checked = False
             else:
-                game.board.state[game.board.bk_pos[0]
-                                 ][game.board.bk_pos[1]].is_checked = False
+                game.board.state[game.board.bk_pos[0]][game.board.bk_pos[1]].is_checked = False
+
+            # if no available moves then it is a stalemate
             if not game.board.is_there_a_move(game.turn):
+                print(game.board)
                 print("Stalemate, it's a draw!")
                 break
 
