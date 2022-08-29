@@ -4,7 +4,7 @@ from pathlib import Path
 sys.path[0] = str(Path(sys.path[0]).parent)
 
 import pytest
-from Chess_classes import Board, Piece, Rook, Knight, Bishop, Queen, King, Pawn, Game
+from Chess_classes import Piece, Rook, Knight, Bishop, Queen, King, Pawn, Game
 
 
 @pytest.fixture
@@ -94,7 +94,7 @@ class TestBoard:
         # mimic human input to promote to a Queen. Promotion to other pieces is identical
         monkeypatch.setattr('builtins.input', lambda _: "Q")
         assert custom_position_one.board.update(start=(6, 7), end=(7, 7)) is True
-        assert isinstance(custom_position_one.board.state[7][7], Queen) is True, "Promotion did not happen or" \
+        assert isinstance(custom_position_one.board.state[7][7], Queen) is True, "Promotion did not happen or " \
                                                                                  "promoted to a wrong piece"
         assert custom_position_one.board.state[6][7] is None
 
@@ -105,6 +105,11 @@ class TestBoard:
         assert custom_position_one.board.is_there_a_move("W") is True, "is_there_a_move error"
         assert custom_position_one.board.is_there_a_move("B") is True, "is_there_a_move error"
 
+    def test_check_if_check(self, custom_position_one):
+        assert custom_position_one.board.check_if_check("B") is False, "check_if_check evaluates a position incorrectly"
+        custom_position_one.move('d5f7')
+        assert custom_position_one.board.check_if_check("B") is True, "check_if_check evaluates a position incorrectly"
+
 
 class TestPawn:
 
@@ -112,3 +117,61 @@ class TestPawn:
     def test_en_passant(self, custom_position_one):
         assert custom_position_one.move('e5f6') is True, "En passant hasn't happened"
         assert custom_position_one.board.state[4][5] is None, "En passant piece wasn't captured"
+
+    def test_get_available_moves(self, custom_position_one):
+        pawn_on_f2 = custom_position_one.board.state[1][5]
+        pawn_on_f2.get_available_moves((1, 5), custom_position_one.board.state)
+        assert pawn_on_f2.available_moves == [[2, 5], [3, 5]], \
+            "Available moves for a pawn are found incorrectly"
+
+        pawn_on_e5 = custom_position_one.board.state[4][4]
+        pawn_on_e5.get_available_moves((4, 4), custom_position_one.board.state)
+        assert pawn_on_e5.available_moves == [[5, 4], [5, 5]], \
+            "Available moves for a pawn are found incorrectly"
+
+
+class TestKnight:
+
+    # tests on custom position one
+    def test_get_available_moves(self, custom_position_one):
+        knight_on_c3 = custom_position_one.board.state[2][2]
+        knight_on_c3.get_available_moves((2, 2), custom_position_one.board.state)
+        print(knight_on_c3.available_moves)
+        assert knight_on_c3.available_moves == [[0, 1], [0, 3], [1, 0], [1, 4], [3, 0], [3, 4], [4, 1]], \
+            "Available moves for a knight are found incorrectly"
+
+
+class TestKing:
+
+    # tests on custom position one
+    def test_get_available_moves(self, custom_position_one):
+        king_on_e8 = custom_position_one.board.state[7][4]
+        king_on_e8.get_available_moves((7, 4), custom_position_one.board.state)
+        assert king_on_e8.available_moves == [[6, 4], [6, 5], [7, 3], [7, 5]], \
+            "Available moves for a king are found incorrectly"
+
+
+class TestRook:
+
+    # tests on custom position one
+    def test_get_available_moves(self, custom_position_one):
+        rook_on_h1 = custom_position_one.board.state[0][7]
+        rook_on_h1.get_available_moves((0, 7), custom_position_one.board.state)
+        assert rook_on_h1.available_moves == [[0, 5], [0, 6]], \
+            "Available moves for a rook are found incorrectly"
+
+        rook_on_a8 = custom_position_one.board.state[7][0]
+        rook_on_a8.get_available_moves((7, 0), custom_position_one.board.state)
+        assert rook_on_a8.available_moves == [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0],
+                                              [6, 0], [7, 1], [7, 2], [7, 3]], \
+            "Available moves for a rook are found incorrectly"
+
+
+class TestBishop:
+
+    # tests on custom position one
+    def test_get_available_moves(self, custom_position_one):
+        bishop_on_g8 = custom_position_one.board.state[7][6]
+        bishop_on_g8.get_available_moves((7, 6), custom_position_one.board.state)
+        assert bishop_on_g8.available_moves == [[4, 3], [5, 4], [6, 5], [6, 7]], \
+            "Available moves for a rook are found incorrectly"
