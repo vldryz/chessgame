@@ -89,17 +89,14 @@ class TestBoard:
         assert isinstance(custom_position_one.board.state[7][7], Queen) is True, "Promotion did not happen or" \
                                                                                  "promoted to a wrong piece"
         assert custom_position_one.board.state[6][7] is None
-        print(custom_position_one.board)
+
+    def test_update_king_moved_into_check(self, custom_position_one):
+        assert custom_position_one.board.update(start=(7, 4), end=(6, 5)) is False
 
 
+class TestPawn:
 
-
-
-
-    # def test_en_passant(self, custom_position_one):
-    #     assert custom_position_one.board.update(start=(4, 4), end=(5, 5)) is True, "En passant logic is wrong"
-    #     print(custom_position_one.board)
-    #     assert custom_position_one.board.state[4][5] is None, "Pawn wasn't captured after en passant"
-    #     assert isinstance(custom_position_one.board.state[5][5], Pawn) is True, "En passant logic is wrong"
-    #     print(custom_position_one.board)
-
+    # tests on custom position one
+    def test_en_passant(self, custom_position_one):
+        assert custom_position_one.move('e5f6') is True, "En passant hasn't happened"
+        assert custom_position_one.board.state[4][5] is None, "En passant piece wasn't captured"
