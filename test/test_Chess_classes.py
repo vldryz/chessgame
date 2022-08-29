@@ -1,3 +1,8 @@
+# the next 3 lines are to fix the relative import ImportError
+import sys
+from pathlib import Path
+sys.path[0] = str(Path(sys.path[0]).parent)
+
 import pytest
 from Chess_classes import Board, Piece, Rook, Knight, Bishop, Queen, King, Pawn, Game
 
