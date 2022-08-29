@@ -322,8 +322,12 @@ class Rook(Piece):
         self.available_moves = []
         for i in range(0, 8):
             for j in range(0, 8):
-                if self.is_legal(start, [i, j], board):
-                    self.available_moves.append([i, j])
+                try:
+                    if self.is_legal(start, [i, j], board):
+                        self.available_moves.append([i, j])
+                except IndexError:
+                    # occurs when a rook is by the border
+                    continue
 
 
 class Knight(Piece):
@@ -388,8 +392,12 @@ class Bishop(Piece):
         self.available_moves = []
         for i in range(0, 8):
             for j in range(0, 8):
-                if self.is_legal(start, [i, j], board):
-                    self.available_moves.append([i, j])
+                try:
+                    if self.is_legal(start, [i, j], board):
+                        self.available_moves.append([i, j])
+                except IndexError:
+                    # occurs when a bishop is by the border
+                    continue
 
 
 class Queen(Piece):
@@ -462,7 +470,7 @@ class Pawn(Piece):
         else:
             diff_multiplier = -1
 
-        # first move of a pawn can move up to two squares
+        # first move of a pawn can move up to two squares. Becomes available for en passant
         if start[1] == end[1] and (end[0] - start[0]) * diff_multiplier == 2 and not self.has_moved and \
                 not board[end[0]][end[1]] and not board[end[0] - diff_multiplier][end[1]]:
             self.en_passant = True
@@ -489,8 +497,12 @@ class Pawn(Piece):
         self.available_moves = []
         for i in range(0, 8):
             for j in range(0, 8):
-                if self.is_legal(start, [i, j], board, is_test=True):
-                    self.available_moves.append([i, j])
+                try:
+                    if self.is_legal(start, [i, j], board, is_test=True):
+                        self.available_moves.append([i, j])
+                except IndexError:
+                    # occurs because of is_legal when a pawn in by the border
+                    continue
 
 
 class Game:
