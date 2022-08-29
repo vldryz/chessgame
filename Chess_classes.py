@@ -212,7 +212,7 @@ class Board:
         else:
             self.state[7][6] = self.state[7][4]
             self.state[7][4] = None
-            self.wk_pos = [7, 6]
+            self.bk_pos = [7, 6]
 
             self.state[7][5] = self.state[7][7]
             self.state[7][7] = None
@@ -258,7 +258,7 @@ class Board:
         else:
             self.state[7][2] = self.state[7][4]
             self.state[7][4] = None
-            self.wk_pos = [7, 2]
+            self.bk_pos = [7, 2]
 
             self.state[7][3] = self.state[7][0]
             self.state[7][0] = None
