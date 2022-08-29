@@ -70,6 +70,14 @@ class TestGame:
         default_game.change_turn()
         assert default_game.turn == 'W'
 
+    # tests on custom position one
+    def test_pawn_movement(self, custom_position_one):
+        assert custom_position_one.move('c2a6') is False, "An illegal move has happened"
+        assert custom_position_one.move('c2c4') is False, "Pawns can't move through a piece"
+        assert custom_position_one.move('f2f4') is True, "Error for a pawn moving two squares"
+        assert custom_position_one.move('e5e7') is False, "Can't move 2 steps forward if had been moved"
+        assert custom_position_one.move('f2g3') is False, "Can't move sideways if not capture"
+
 
 class TestBoard:
 
@@ -92,6 +100,10 @@ class TestBoard:
 
     def test_update_king_moved_into_check(self, custom_position_one):
         assert custom_position_one.board.update(start=(7, 4), end=(6, 5)) is False
+
+    def test_is_there_a_move(self, custom_position_one):
+        assert custom_position_one.board.is_there_a_move("W") is True, "is_there_a_move error"
+        assert custom_position_one.board.is_there_a_move("B") is True, "is_there_a_move error"
 
 
 class TestPawn:
