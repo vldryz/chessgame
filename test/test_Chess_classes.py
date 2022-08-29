@@ -4,7 +4,7 @@ from pathlib import Path
 sys.path[0] = str(Path(sys.path[0]).parent)
 
 import pytest
-from Chess_classes import Piece, Rook, Knight, Bishop, Queen, King, Pawn, Game
+from Chess_classes import Rook, Knight, Bishop, Queen, King, Pawn, Game
 
 
 @pytest.fixture
