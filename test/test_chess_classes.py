@@ -1,5 +1,5 @@
 import pytest
-from chess_classes import Rook, Knight, Bishop, Queen, King, Pawn, Game
+from chess_classes import Rook, Knight, Bishop, Queen, King, Pawn, Game, Colour
 
 
 @pytest.fixture
@@ -21,14 +21,14 @@ def custom_position_one():
 
     # custom position
     game.board.state = [
-        [None, None, None, None, King('W'), None, None, Rook('W')],
-        [None, None, Pawn('W'), None, None, Pawn('W'), None, Pawn('W')],
-        [None, None, Knight('W'), None, None, None, None, None],
+        [*[None] * 4, King(Colour.WHITE), *[None] * 2, Rook(Colour.WHITE)],
+        [*[None] * 2, Pawn(Colour.WHITE), *[None] * 2, Pawn(Colour.WHITE), None, Pawn(Colour.WHITE)],
+        [*[None] * 2, Knight(Colour.WHITE), *[None] * 5],
         [None] * 8,
-        [None, None, None, Queen('W'), Pawn('W'), Pawn('B'), None, None],
+        [*[None] * 3, Queen(Colour.WHITE), Pawn(Colour.WHITE), Pawn(Colour.BLACK), *[None] * 2],
         [None] * 8,
-        [None, None, None, Pawn('B'), None, None, None, Pawn('W')],
-        [Rook('B'), None, None, None, King('B'), None, Bishop('B'), None]
+        [*[None] * 3, Pawn(Colour.BLACK), *[None] * 3, Pawn(Colour.WHITE)],
+        [Rook(Colour.BLACK), *[None] * 3, King(Colour.BLACK), None, Bishop(Colour.BLACK), None]
     ]
 
     # pawns were moved
@@ -61,9 +61,9 @@ class TestGame:
 
     def test_change_turn(self, default_game):
         default_game.change_turn()
-        assert default_game.turn == 'B'
+        assert default_game.turn == Colour.BLACK
         default_game.change_turn()
-        assert default_game.turn == 'W'
+        assert default_game.turn == Colour.WHITE
 
     # tests on custom position one
     def test_pawn_movement(self, custom_position_one):
@@ -78,12 +78,12 @@ class TestBoard:
 
     # tests on custom position one
     def test_short_castle(self, custom_position_one):
-        assert custom_position_one.board.short_castle('W') is True, "Short castle logic is wrong"
-        assert custom_position_one.board.short_castle('B') is False, "Short castle logic is wrong"
+        assert custom_position_one.board.short_castle(Colour.WHITE) is True, "Short castle logic is wrong"
+        assert custom_position_one.board.short_castle(Colour.BLACK) is False, "Short castle logic is wrong"
 
     def test_long_castle(self, custom_position_one):
-        assert custom_position_one.board.long_castle('B') is True, "Long castle logic is wrong"
-        assert custom_position_one.board.long_castle('W') is False, "Long castle logic is wrong"
+        assert custom_position_one.board.long_castle(Colour.BLACK) is True, "Long castle logic is wrong"
+        assert custom_position_one.board.long_castle(Colour.WHITE) is False, "Long castle logic is wrong"
 
     def test_update_pawn_promotion(self, custom_position_one, monkeypatch):
         # mimic human input to promote to a Queen. Promotion to other pieces is identical
@@ -97,13 +97,13 @@ class TestBoard:
         assert custom_position_one.board.update(start=(7, 4), end=(6, 5)) is False
 
     def test_is_there_a_move(self, custom_position_one):
-        assert custom_position_one.board.is_there_a_move("W") is True, "is_there_a_move error"
-        assert custom_position_one.board.is_there_a_move("B") is True, "is_there_a_move error"
+        assert custom_position_one.board.is_there_a_move(Colour.WHITE) is True, "is_there_a_move error"
+        assert custom_position_one.board.is_there_a_move(Colour.BLACK) is True, "is_there_a_move error"
 
     def test_check_if_check(self, custom_position_one):
-        assert custom_position_one.board.check_if_check("B") is False, "check_if_check evaluates a position incorrectly"
+        assert custom_position_one.board.check_if_check(Colour.BLACK) is False, "check_if_check evaluates a position incorrectly"
         custom_position_one.move('d5f7')
-        assert custom_position_one.board.check_if_check("B") is True, "check_if_check evaluates a position incorrectly"
+        assert custom_position_one.board.check_if_check(Colour.BLACK) is True, "check_if_check evaluates a position incorrectly"
 
 
 class TestPawn:

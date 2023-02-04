@@ -1,47 +1,39 @@
+from enum import Enum
+
+
+class Colour(str, Enum):
+    WHITE = 'W'
+    BLACK = 'B'
+
+
 class Board:
     def __init__(self):
-        wr_1 = Rook('W')
-        wn_1 = Knight('W')
-        wb_1 = Bishop('W')
-        wq = Queen('W')
-        wk = King('W')
-        wb_2 = Bishop('W')
-        wn_2 = Knight('W')
-        wr_2 = Rook('W')
-        wp_1 = Pawn('W')
-        wp_2 = Pawn('W')
-        wp_3 = Pawn('W')
-        wp_4 = Pawn('W')
-        wp_5 = Pawn('W')
-        wp_6 = Pawn('W')
-        wp_7 = Pawn('W')
-        wp_8 = Pawn('W')
+        wr_1 = Rook(Colour.WHITE)
+        wn_1 = Knight(Colour.WHITE)
+        wb_1 = Bishop(Colour.WHITE)
+        wq = Queen(Colour.WHITE)
+        wk = King(Colour.WHITE)
+        wb_2 = Bishop(Colour.WHITE)
+        wn_2 = Knight(Colour.WHITE)
+        wr_2 = Rook(Colour.WHITE)
 
-        br_1 = Rook('B')
-        bn_1 = Knight('B')
-        bb_1 = Bishop('B')
-        bq = Queen('B')
-        bk = King('B')
-        bb_2 = Bishop('B')
-        bn_2 = Knight('B')
-        br_2 = Rook('B')
-        bp_1 = Pawn('B')
-        bp_2 = Pawn('B')
-        bp_3 = Pawn('B')
-        bp_4 = Pawn('B')
-        bp_5 = Pawn('B')
-        bp_6 = Pawn('B')
-        bp_7 = Pawn('B')
-        bp_8 = Pawn('B')
+        br_1 = Rook(Colour.BLACK)
+        bn_1 = Knight(Colour.BLACK)
+        bb_1 = Bishop(Colour.BLACK)
+        bq = Queen(Colour.BLACK)
+        bk = King(Colour.BLACK)
+        bb_2 = Bishop(Colour.BLACK)
+        bn_2 = Knight(Colour.BLACK)
+        br_2 = Rook(Colour.BLACK)
 
         self.state = [
             [wr_1, wn_1, wb_1, wq, wk, wb_2, wn_2, wr_2],
-            [wp_1, wp_2, wp_3, wp_4, wp_5, wp_6, wp_7, wp_8],
+            [Pawn(Colour.WHITE) for _ in range(8)],
             [None] * 8,
             [None] * 8,
             [None] * 8,
             [None] * 8,
-            [bp_1, bp_2, bp_3, bp_4, bp_5, bp_6, bp_7, bp_8],
+            [Pawn(Colour.BLACK) for _ in range(8)],
             [br_1, bn_1, bb_1, bq, bk, bb_2, bn_2, br_2]
         ]
 
@@ -275,8 +267,8 @@ class Board:
 
 class Piece:
     def __init__(self, colour, icon):
-        self.colour = colour
-        self.icon = icon
+        self.colour: Colour = colour
+        self.icon: str = icon
         self.available_moves: list = []
 
     def __repr__(self):
