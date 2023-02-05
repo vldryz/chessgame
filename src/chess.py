@@ -33,8 +33,11 @@ class Chess:
             if not success:  # if the move was invalid, ask for another move
                 continue
 
-            if not self.board.make_move(start, end):  # if the move was illegal, ask for another move
+            if not self.board.make_move(start, end, self.turn):  # if the move was illegal, ask for another move
                 continue
+
+            self._increment_move()
+            self._change_turn()
 
             print(self.board)
 
@@ -45,7 +48,7 @@ class Chess:
         self.turn = Colour.WHITE if self.turn == Colour.BLACK else Colour.BLACK
 
     @staticmethod
-    def _request_input(prompt) -> tuple[str, InputType]:
+    def _request_input(prompt: str = "") -> tuple[str, InputType]:
         """Requests a move from a user.
 
         Args:
@@ -137,6 +140,8 @@ class Chess:
         """Prompts the user end of the game options."""
         print("Would you like to play again? [yes/no].\nFor other options, type 'help'.\n")
         input_ = input().lower()
+
+        # use _request_input() and say that must be command since the game is over. suggest printing help message
 
         if input_ == Commands.YES.value:
             Chess().play()

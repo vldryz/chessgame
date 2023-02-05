@@ -39,7 +39,18 @@ class Board:
             ],
         ]
 
-    def make_move(self, start, end):
+    def make_move(self, start: tuple[int, int], end: tuple[int, int], turn: Colour) -> bool:
+        """Makes a move on the board.
+
+        Args:
+            start (tuple[int, int]): The starting position of the piece.
+            end (tuple[int, int]): The ending position of the piece.
+            turn (Colour): The colour of the pieces of the player making the move.
+
+        Returns:
+            bool: Whether the move was legal.
+
+        """
         ...
 
     def __str__(self):
