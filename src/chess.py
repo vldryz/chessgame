@@ -1,11 +1,13 @@
 """This module provides the game class used to run the chess game."""
+
 # ——————————————————————————————————————————— Imports ——————————————————————————————————————————— #
 # Standard libraries
 import sys
+from contextlib import suppress
 
 # Dependencies
 from board import Board
-from utils import Colour, InputType, Commands
+from utils import Colour, Commands, Moves
 
 # ———————————————————————————————————————————— Code ———————————————————————————————————————————— #
 
@@ -22,18 +24,14 @@ class Chess:
         print(self.board)
 
         while True:
-            input_, input_type = self._request_input(f"{self.turn.value} to move on move {self.move_number}.\n"
-                                                     f"Enter your move: ")
+            raw_input, processed_input = self._request_input(f"{self.turn.value} to move on move {self.move_number}.\n"
+                                                             f"Enter your move: ")
 
-            if input_type == InputType.COMMAND:  # process command
-                self._handle_command(input_)
+            if processed_input in Commands:
+                self._handle_command(processed_input)
                 continue
 
-            success, start, end = self._handle_move(input_)  # process move
-            if not success:  # if the move was invalid, ask for another move
-                continue
-
-            if not self.board.make_move(start, end, self.turn):  # if the move was illegal, ask for another move
+            if not self.board.make_move(raw_input, self.turn):
                 continue
 
             self._increment_move()
@@ -48,93 +46,57 @@ class Chess:
         self.turn = Colour.WHITE if self.turn == Colour.BLACK else Colour.BLACK
 
     @staticmethod
-    def _request_input(prompt: str = "") -> tuple[str, InputType]:
+    def _request_input(prompt: str = "") -> tuple[str, Commands | Moves]:
         """Requests a move from a user.
+
+        We use this method to request a move from the user.
+        It will first try to convert the input to a command.
+        If it fails, it will consider the input a move.
 
         Args:
             prompt (str): The prompt to display to the user.
 
         Returns:
-            tuple[str, InputType]: The user's input and the type of input.
+            tuple[str, Commands | Moves]: The user's input and the type of input.
 
         """
 
         input_ = input(prompt).lower()
 
-        # In Python 3.12 it will be possible to check for member values in enums with "in `class_name`".
-        # https://docs.python.org/3/library/enum.html#data-types
-        return (input_, InputType.COMMAND) if input_ in Commands.values() else (input_, InputType.MOVE)
+        with suppress(ValueError):
+            command = Commands(input_)
+            return input_, command
 
-    def _handle_command(self, input_: str) -> None:
+        return input_, Moves.DEFAULT
+
+    def _handle_command(self, command: Commands) -> None:
         """Handles a command input."""
-        if input_ == Commands.HELP:
+        if command == Commands.HELP:
             # TODO: Add help message
             print("Help message")
 
-        elif input_ in {Commands.SURRENDER.value, Commands.RESIGN.value}:
+        elif command == Commands.RESIGN:
             print(f"{self.turn.value} resigns. "
                   f"{Colour.WHITE.value if self.turn == Colour.BLACK else Colour.BLACK.value} wins.")
             self._after_match()
 
-        elif input_ == Commands.DRAW.value:
+        elif command == Commands.DRAW:
             print("The match ends in a draw.")
             self._after_match()
 
-        elif input_ == Commands.RESET.value:  # reset the game
+        elif command == Commands.RESET:
             Chess().play()
             sys.exit()
 
-        elif input_ == Commands.SAVE_MOVE_HISTORY.value:
+        elif command == Commands.SAVE_MOVE_HISTORY:
             self._save_move_history()
 
-        elif input_ == Commands.PRINT_BOARD.value:
+        elif command == Commands.PRINT_BOARD:
             print(self.board)
 
-        elif input_ == Commands.EXIT.value:  # terminate the programme
+        elif command == Commands.EXIT:
             print("Exiting game...")
             sys.exit()
-
-    @staticmethod
-    def _handle_move(notation: str) -> tuple[bool, tuple[int, int], tuple[int, int]]:
-        """Converts a chess notation to a tuple of board coordinates.
-
-        Args:
-            notation (str): The chess notation to convert.
-
-        Returns:
-            tuple[bool, tuple[int, int], tuple[int, int]]:
-                A tuple containing a boolean indicating if the conversion was
-                successful, the file and rank of the square.
-
-        """
-
-        if len(notation) != 4:
-            print(f"Invalid Move: {notation} is not a valid move.\n")
-            return False, (-1, -1), (-1, -1)
-
-        ranks = ["a", "b", "c", "d", "e", "f", "g", "h"]
-
-        rank_start, rank_end = notation[0], notation[2]
-        file_start, file_end = notation[1], notation[3]
-
-        # Check if the start and end ranks are valid
-        if not {rank_start, rank_end}.issubset(set(ranks)):
-            print("Invalid Move: Rank selection is invalid.\n")
-            return False, (-1, -1), (-1, -1)
-
-        # Check if the start and end files are valid
-        if not all(
-            file.isdigit() or int(file) not in range(1, 9)
-            for file in (file_start, file_end)
-        ):
-            print("Invalid Move: File selection is invalid.\n")
-            return False, (-1, -1), (-1, -1)
-
-        return (
-            True,
-            (int(file_start) - 1, ranks.index(rank_start)),
-            (int(file_end) - 1, ranks.index(rank_end)),
-        )
 
     def _after_match(self) -> None:
         """Prompts the user end of the game options."""
