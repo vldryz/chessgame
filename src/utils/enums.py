@@ -1,20 +1,23 @@
 """Enum classes for the project."""
 # ——————————————————————————————————————————— Imports ——————————————————————————————————————————— #
 # Standard libraries
-from enum import Enum
+from enum import StrEnum, Enum
 
 # ———————————————————————————————————————————— Code ———————————————————————————————————————————— #
 
 
-class Colour(str, Enum):
+class Colour(StrEnum):
     """Enum class for piece colours."""
     WHITE = "White"
     BLACK = "Black"
 
 
-class InputType(Enum):
-    COMMAND = "command"
-    MOVE = "move"
+class Moves(Enum):
+    """Enum class for moves."""
+    DEFAULT = "default"
+    PIECE_MOVE = "piece move"
+    SHORT_CASTLE = "O-O"
+    LONG_CASTLE = "O-O-O"
 
 
 class Commands(Enum):
@@ -25,14 +28,9 @@ class Commands(Enum):
     EXIT = "exit"
     SAVE_MOVE_HISTORY = "save move history"
     RESET = "reset"
-    SURRENDER = "surrender"
     RESIGN = "resign"
     DRAW = "draw"
     PRINT_BOARD = "print board"
 
     # Implement in the future
     LOAD = "load from move history"
-
-    @staticmethod
-    def values() -> set[str]:
-        return {command.value for command in Commands}

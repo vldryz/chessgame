@@ -1,1 +1,1 @@
-from utils.enums import Colour, InputType, Commands
+from utils.enums import Colour, Commands, Moves
