@@ -16,8 +16,8 @@ class Moves(Enum):
     """Enum class for moves."""
     DEFAULT = "default"
     PIECE_MOVE = "piece move"
-    SHORT_CASTLE = "O-O"
-    LONG_CASTLE = "O-O-O"
+    SHORT_CASTLE = "o-o"
+    LONG_CASTLE = "o-o-o"
 
 
 class Commands(Enum):
