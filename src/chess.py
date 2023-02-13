@@ -75,6 +75,9 @@ class Chess:
 
         """
 
+        # in Python 3.12 it will be possible to check whether a string is
+        # one of the values of an Enum instead of using a suppression method.
+
         with suppress(ValueError):
             return Commands(raw_input)
 
