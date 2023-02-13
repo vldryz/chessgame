@@ -54,7 +54,7 @@ class Board:
             bool: Whether the move was played. False if the move was illegal.
 
         """
-        move: Moves = self.process_input(raw_input)
+        move = self.process_input(raw_input)
 
         if move == Moves.SHORT_CASTLE:
             return self.short_castle(turn)
@@ -73,7 +73,38 @@ class Board:
             return False
 
     def move_piece(self, start: tuple[int, int], end: tuple[int, int], turn: Colour) -> bool:
-        ...
+        """The function to process a move.
+
+        Args:
+            start (tuple[int, int]): The starting position of the piece.
+            end (tuple[int, int]): The ending position of the piece.
+            turn (Colour): The colour of the pieces of the player making the move.
+
+        Returns:
+            bool: Whether the move was played. False if the move was illegal.
+
+        """
+
+        piece = self.state[start[0]][start[1]]
+        if not piece:
+            print(f"Invalid Move: There is no piece at {start}.\n")
+            return False
+
+        if piece.colour != turn:
+            print(f"Invalid Move: It is {turn}'s turn.\n")
+            return False
+
+        if end not in piece.legal_moves(start, self):
+            print(f"Invalid Move: {piece} cannot move to {end}.\n")
+            return False
+
+
+
+        self.state[end[0]][end[1]] = piece
+        self.state[start[0]][start[1]] = None
+        piece.moved = True
+
+        return True
 
     def short_castle(self, turn: Colour) -> bool:
         """Performs a short castle.
@@ -151,7 +182,7 @@ class Board:
         # Check if the start and end files are valid
         if not all(
                 file.isdigit() or int(file) not in range(1, 9)
-                for file in (file_start, file_end)
+                for file in {file_start, file_end}
         ):
             print("Invalid Move: File selection is invalid.\n")
             return None
