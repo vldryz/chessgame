@@ -27,6 +27,10 @@ class Piece(ABC):
         Legal moves are defined as a subset of available moves
         that do not put the king in check.
 
+        Args:
+            start (tuple[int, int]): The starting position of the piece.
+            board (Board): The board on which the piece is located.
+
         Returns:
             list[tuple[int, int]]: A list of legal moves for the piece.
 
@@ -41,6 +45,10 @@ class Piece(ABC):
         Available moves are defined as moves to which a piece can
         technically move, regardless of whether it will put the king in check.
         Or in other words, the moves that are not blocked by other pieces.
+
+        Args:
+            start (tuple[int, int]): The starting position of the piece.
+            board (Board): The board on which the piece is located.
 
         Returns:
             list[tuple[int, int]]: A list of available moves for the piece.
