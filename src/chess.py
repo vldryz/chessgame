@@ -1,5 +1,4 @@
 """This module provides the game class used to run the chess game."""
-
 # ——————————————————————————————————————————— Imports ——————————————————————————————————————————— #
 # Standard libraries
 import sys
@@ -20,12 +19,13 @@ class Chess:
         self.move_history: list = []
 
     def play(self):
-        print("A game of chess begins.")
+        print("A game of chess begins.\n")
         print(self.board)
 
         while True:
-            raw_input, processed_input = self._request_input(f"{self.turn.value} to move on move {self.move_number}.\n"
-                                                             f"Enter your move: ")
+            raw_input: str = self._request_input(f"{self.turn.value} to move on move {self.move_number}.\n"
+                                                 f"Enter your move: ")
+            processed_input: Commands | Moves = self._process_input(raw_input)
 
             if processed_input in Commands:
                 self._handle_command(processed_input)
@@ -46,28 +46,39 @@ class Chess:
         self.turn = Colour.WHITE if self.turn == Colour.BLACK else Colour.BLACK
 
     @staticmethod
-    def _request_input(prompt: str = "") -> tuple[str, Commands | Moves]:
+    def _request_input(prompt: str = "") -> str:
         """Requests a move from a user.
+
+        Args:
+            prompt (str): The prompt to display to the user.
+
+        Returns:
+            str: The user's input.
+
+        """
+
+        return input(prompt).lower()
+
+    @staticmethod
+    def _process_input(raw_input: str) -> Commands | Moves:
+        """Processes a user's input.
 
         We use this method to request a move from the user.
         It will first try to convert the input to a command.
         If it fails, it will consider the input a move.
 
         Args:
-            prompt (str): The prompt to display to the user.
+            raw_input (str): The user's input.
 
         Returns:
-            tuple[str, Commands | Moves]: The user's input and the type of input.
+            Commands | Moves: The type of input.
 
         """
 
-        input_ = input(prompt).lower()
-
         with suppress(ValueError):
-            command = Commands(input_)
-            return input_, command
+            return Commands(raw_input)
 
-        return input_, Moves.DEFAULT
+        return Moves.DEFAULT
 
     def _handle_command(self, command: Commands) -> None:
         """Handles a command input."""
@@ -123,7 +134,7 @@ class Chess:
             print("Invalid input.\n")
             self._after_match()
 
-    def _save_move_history(self, file_name: str = "move_history.txt"):
+    def _save_move_history(self, file_name: str = "move_history.txt") -> None:
         """Saves the move history to a `.txt` file."""
         with open(file_name, "w") as file:
             file.write(str(self.move_history))

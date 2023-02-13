@@ -1,8 +1,12 @@
 """This module provides the board class used to manage the state of the chess board."""
 # ——————————————————————————————————————————— Imports ——————————————————————————————————————————— #
+# Standard libraries
+from typing import Optional
+from contextlib import suppress
+
 # Dependencies
 from pieces import *
-from utils import Colour
+from utils import Colour, Moves
 
 # ———————————————————————————————————————————— Code ———————————————————————————————————————————— #
 
@@ -47,28 +51,92 @@ class Board:
             turn (Colour): The colour of the pieces of the player making the move.
 
         Returns:
-            bool: Whether the move was legal.
+            bool: Whether the move was played. False if the move was illegal.
+
+        """
+        move: Moves = self.process_input(raw_input)
+
+        if move == Moves.SHORT_CASTLE:
+            return self.short_castle(turn)
+
+        if move == Moves.LONG_CASTLE:
+            return self.long_castle(turn)
+
+        # move_type == Moves.PIECE_MOVE
+        # unpacking with walrus operator is not supported
+        if not (coordinates := self.notation_to_coordinates(raw_input)):
+            return False
+
+        start, end = coordinates
+
+        if not self.move_piece(start, end, turn):
+            return False
+
+    def move_piece(self, start: tuple[int, int], end: tuple[int, int], turn: Colour) -> bool:
+        ...
+
+    def short_castle(self, turn: Colour) -> bool:
+        """Performs a short castle.
+
+        Args:
+            turn (Colour): The colour of the pieces of the player making the move.
+
+        Returns:
+            bool: Whether the move was played. False if the move was illegal.
+
+        """
+        ...
+
+    def long_castle(self, turn: Colour) -> bool:
+        """Performs a long castle.
+
+        Args:
+            turn (Colour): The colour of the pieces of the player making the move.
+
+        Returns:
+            bool: Whether the move was played. False if the move was illegal.
 
         """
         ...
 
     @staticmethod
-    def _handle_move(notation: str) -> tuple[bool, tuple[int, int], tuple[int, int]]:
+    def process_input(raw_input: str) -> Moves:
+        """Gets the type of move.
+
+        The method first checks whether the input is a command like
+        castling. If it is, it returns the corresponding move type.
+        If it is not, it assumes the input is a piece move.
+
+        Args:
+            raw_input (str): The move to get the type of.
+
+        Returns:
+            Moves: The type of move.
+
+        """
+
+        with suppress(ValueError):
+            return Moves(raw_input)
+
+        return Moves.PIECE_MOVE
+
+    @staticmethod
+    def notation_to_coordinates(notation: str) -> Optional[tuple[tuple[int, int], tuple[int, int]]]:
         """Converts a chess notation to a tuple of board coordinates.
 
         Args:
             notation (str): The chess notation to convert.
 
         Returns:
-            tuple[bool, tuple[int, int], tuple[int, int]]:
-                A tuple containing a boolean indicating if the conversion was
-                successful, the file and rank of the square.
+            Optional[tuple[tuple[int, int], tuple[int, int]]]:
+                The file and rank of the start and end squares of the move.
+                None if the move is invalid.
 
         """
 
         if len(notation) != 4:
             print(f"Invalid Move: {notation} is not a valid move.\n")
-            return False, (-1, -1), (-1, -1)
+            return None
 
         ranks = ["a", "b", "c", "d", "e", "f", "g", "h"]
 
@@ -78,7 +146,7 @@ class Board:
         # Check if the start and end ranks are valid
         if not {rank_start, rank_end}.issubset(set(ranks)):
             print("Invalid Move: Rank selection is invalid.\n")
-            return False, (-1, -1), (-1, -1)
+            return None
 
         # Check if the start and end files are valid
         if not all(
@@ -86,10 +154,9 @@ class Board:
                 for file in (file_start, file_end)
         ):
             print("Invalid Move: File selection is invalid.\n")
-            return False, (-1, -1), (-1, -1)
+            return None
 
         return (
-            True,
             (int(file_start) - 1, ranks.index(rank_start)),
             (int(file_end) - 1, ranks.index(rank_end)),
         )
