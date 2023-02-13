@@ -21,7 +21,7 @@ class Piece(ABC):
         return self.icon
 
     @abstractmethod
-    def legal_moves(self) -> list[tuple[int, int]]:
+    def legal_moves(self, start, board: Board) -> list[tuple[int, int]]:
         """The method to get a list of legal moves for a piece.
 
         Legal moves are defined as a subset of available moves
