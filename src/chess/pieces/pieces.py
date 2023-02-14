@@ -1,9 +1,9 @@
 """This module provides classes for chess pieces."""
 # ——————————————————————————————————————————— Imports ——————————————————————————————————————————— #
 # Dependencies
-from board import Board
-from pieces.piece_base import Piece
-from utils import Colour
+from chess.board import Board
+from chess.pieces.piece_base import Piece
+from chess.colours import Colour
 
 # ———————————————————————————————————————————— Code ———————————————————————————————————————————— #
 

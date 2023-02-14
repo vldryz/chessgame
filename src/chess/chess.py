@@ -3,12 +3,32 @@
 # Standard libraries
 import sys
 from contextlib import suppress
+from enum import Enum
 
 # Dependencies
-from board import Board
-from utils import Colour, Commands, Moves
+from chess.board import Board
+from chess.colours import Colour
 
 # ———————————————————————————————————————————— Code ———————————————————————————————————————————— #
+
+
+class Commands(Enum):
+    """Enum class for commands."""
+    YES = "yes"
+    NO = "no"
+    HELP = "help"
+    EXIT = "exit"
+    SAVE_MOVE_HISTORY = "save move history"
+    RESET = "reset"
+    RESIGN = "resign"
+    DRAW = "draw"
+    PRINT_BOARD = "print board"
+
+    # Default command to play a move
+    MOVE = "move"
+
+    # Implement in the future
+    LOAD = "load from move history"
 
 
 class Chess:
@@ -25,10 +45,10 @@ class Chess:
         while True:
             raw_input: str = self._request_input(f"{self.turn.value} to move on move {self.move_number}.\n"
                                                  f"Enter your move: ")
-            processed_input: Commands | Moves = self._process_input(raw_input)
+            processed_input: Commands = self._process_input(raw_input)
 
-            if processed_input in Commands:
-                self._handle_command(processed_input)
+            if processed_input != Commands.MOVE:
+                self._handle_game_command(processed_input)
                 continue
 
             if not self.board.make_move(raw_input, self.turn):
@@ -60,18 +80,18 @@ class Chess:
         return input(prompt).lower()
 
     @staticmethod
-    def _process_input(raw_input: str) -> Commands | Moves:
+    def _process_input(raw_input: str) -> Commands:
         """Processes a user's input.
 
         We use this method to request a move from the user.
-        It will first try to convert the input to a command.
-        If it fails, it will consider the input a move.
+        It will first try to convert the input to a non-move
+        command. If it fails, it will consider the input a move.
 
         Args:
             raw_input (str): The user's input.
 
         Returns:
-            Commands | Moves: The type of input.
+            Commands: The command to perform.
 
         """
 
@@ -81,9 +101,9 @@ class Chess:
         with suppress(ValueError):
             return Commands(raw_input)
 
-        return Moves.DEFAULT
+        return Commands.MOVE
 
-    def _handle_command(self, command: Commands) -> None:
+    def _handle_game_command(self, command: Commands) -> None:
         """Handles a command input."""
         if command == Commands.HELP:
             # TODO: Add help message

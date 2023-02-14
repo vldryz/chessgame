@@ -3,12 +3,20 @@
 # Standard libraries
 from typing import Optional
 from contextlib import suppress
+from enum import Enum
 
 # Dependencies
-from pieces import *
-from utils import Colour, Moves
+from chess.pieces import *
+from chess.colours import Colour
 
 # ———————————————————————————————————————————— Code ———————————————————————————————————————————— #
+
+
+class Moves(Enum):
+    """Enum class for moves."""
+    PIECE_MOVE = "piece move"
+    SHORT_CASTLE = "o-o"
+    LONG_CASTLE = "o-o-o"
 
 
 class Board:

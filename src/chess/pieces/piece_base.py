@@ -4,8 +4,8 @@
 from abc import ABC, abstractmethod
 
 # Dependencies
-from board import Board
-from utils import Colour
+from chess.board import Board
+from chess.colours import Colour
 
 # ———————————————————————————————————————————— Code ———————————————————————————————————————————— #
 
