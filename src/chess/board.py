@@ -12,11 +12,13 @@ from chess.colours import Colour
 # ———————————————————————————————————————————— Code ———————————————————————————————————————————— #
 
 
-class Moves(Enum):
+class MoveCommands(Enum):
     """Enum class for moves."""
-    PIECE_MOVE = "piece move"
     SHORT_CASTLE = "o-o"
     LONG_CASTLE = "o-o-o"
+
+    # Default command to play a move
+    PIECE_MOVE = "piece move"
 
 
 class Board:
@@ -62,17 +64,13 @@ class Board:
             bool: Whether the move was played. False if the move was illegal.
 
         """
-        move = self.process_input(raw_input)
+        move = self._process_input(raw_input)
 
-        if move == Moves.SHORT_CASTLE:
-            return self.short_castle(turn)
+        if move in {MoveCommands.SHORT_CASTLE, MoveCommands.LONG_CASTLE}:
+            return self.castle(move, turn)
 
-        if move == Moves.LONG_CASTLE:
-            return self.long_castle(turn)
-
-        # move_type == Moves.PIECE_MOVE
         # unpacking with walrus operator is not supported
-        if not (coordinates := self.notation_to_coordinates(raw_input)):
+        if not (coordinates := self._notation_to_coordinates(raw_input)):
             return False
 
         start, end = coordinates
@@ -114,32 +112,42 @@ class Board:
 
         return True
 
-    def short_castle(self, turn: Colour) -> bool:
-        """Performs a short castle.
+    def castle(self, move: MoveCommands, turn: Colour) -> bool:
+        """Performs a castle.
 
         Args:
+            move (MoveCommands): The type of castle to perform.
             turn (Colour): The colour of the pieces of the player making the move.
 
         Returns:
             bool: Whether the move was played. False if the move was illegal.
 
         """
-        ...
 
-    def long_castle(self, turn: Colour) -> bool:
-        """Performs a long castle.
+        if move == MoveCommands.SHORT_CASTLE:
+            if turn == Colour.WHITE:
+                king = self.state[0][4]
+                rook = self.state[0][7]
+                in_between_squares = [[0, 5], [0, 6]]
 
-        Args:
-            turn (Colour): The colour of the pieces of the player making the move.
+            else:
+                king = self.state[7][4]
+                rook = self.state[7][7]
+                in_between_squares = [[7, 5], [7, 6]]
 
-        Returns:
-            bool: Whether the move was played. False if the move was illegal.
+        else:
+            if turn == Colour.WHITE:
+                king = self.state[0][4]
+                rook = self.state[0][0]
+                in_between_squares = [[0, 2], [0, 3]]
+            else:
+                king = self.state[7][4]
+                rook = self.state[7][0]
+                in_between_squares = [[7, 2], [7, 3]]
 
-        """
-        ...
 
     @staticmethod
-    def process_input(raw_input: str) -> Moves:
+    def _process_input(raw_input: str) -> MoveCommands:
         """Gets the type of move.
 
         The method first checks whether the input is a command like
@@ -150,17 +158,17 @@ class Board:
             raw_input (str): The move to get the type of.
 
         Returns:
-            Moves: The type of move.
+            MoveCommands: The type of move.
 
         """
 
         with suppress(ValueError):
-            return Moves(raw_input)
+            return MoveCommands(raw_input)
 
-        return Moves.PIECE_MOVE
+        return MoveCommands.PIECE_MOVE
 
     @staticmethod
-    def notation_to_coordinates(notation: str) -> Optional[tuple[tuple[int, int], tuple[int, int]]]:
+    def _notation_to_coordinates(notation: str) -> Optional[tuple[tuple[int, int], tuple[int, int]]]:
         """Converts a chess notation to a tuple of board coordinates.
 
         Args:
