@@ -12,7 +12,7 @@ from chess.colours import Colour
 # ———————————————————————————————————————————— Code ———————————————————————————————————————————— #
 
 
-class Commands(Enum):
+class GameCommands(Enum):
     """Enum class for commands."""
     YES = "yes"
     NO = "no"
@@ -47,7 +47,7 @@ class Chess:
                                                  f"Enter your move: ")
             processed_input = self._process_input(raw_input)
 
-            if processed_input != Commands.MOVE:
+            if processed_input != GameCommands.MOVE:
                 self._handle_game_command(processed_input)
                 continue
 
@@ -59,12 +59,6 @@ class Chess:
             self._change_turn()
 
             print(self.board)
-
-    def _increment_move(self):
-        self.move_number += 1
-
-    def _change_turn(self):
-        self.turn = Colour.WHITE if self.turn == Colour.BLACK else Colour.BLACK
 
     @staticmethod
     def _request_input(prompt: str = "") -> str:
@@ -81,7 +75,7 @@ class Chess:
         return input(prompt).lower()
 
     @staticmethod
-    def _process_input(raw_input: str) -> Commands:
+    def _process_input(raw_input: str) -> GameCommands:
         """Processes a user's input.
 
         We use this method to request a move from the user.
@@ -92,7 +86,7 @@ class Chess:
             raw_input (str): The user's input.
 
         Returns:
-            Commands: The command to perform.
+            GameCommands: The command to perform.
 
         """
 
@@ -100,36 +94,42 @@ class Chess:
         # one of the values of an Enum instead of using a suppression method.
 
         with suppress(ValueError):
-            return Commands(raw_input)
+            return GameCommands(raw_input)
 
-        return Commands.MOVE
+        return GameCommands.MOVE
 
-    def _handle_game_command(self, command: Commands) -> None:
+    def _increment_move(self):
+        self.move_number += 1
+
+    def _change_turn(self):
+        self.turn = Colour.WHITE if self.turn == Colour.BLACK else Colour.BLACK
+
+    def _handle_game_command(self, command: GameCommands) -> None:
         """Handles a command input."""
-        if command == Commands.HELP:
+        if command == GameCommands.HELP:
             # TODO: Add help message
             print("Help message")
 
-        elif command == Commands.RESIGN:
+        elif command == GameCommands.RESIGN:
             print(f"{self.turn.value} resigns. "
                   f"{Colour.WHITE.value if self.turn == Colour.BLACK else Colour.BLACK.value} wins.")
             self._after_match()
 
-        elif command == Commands.DRAW:
+        elif command == GameCommands.DRAW:
             print("The match ends in a draw.")
             self._after_match()
 
-        elif command == Commands.RESET:
+        elif command == GameCommands.RESET:
             Chess().play()
             sys.exit()
 
-        elif command == Commands.SAVE_MOVE_HISTORY:
+        elif command == GameCommands.SAVE_MOVE_HISTORY:
             self._save_move_history()
 
-        elif command == Commands.PRINT_BOARD:
+        elif command == GameCommands.PRINT_BOARD:
             print(self.board)
 
-        elif command == Commands.EXIT:
+        elif command == GameCommands.EXIT:
             print("Exiting game...")
             sys.exit()
 
@@ -140,17 +140,17 @@ class Chess:
 
         # use _request_input() and say that must be command since the game is over. suggest printing help message
 
-        if input_ == Commands.YES.value:
+        if input_ == GameCommands.YES.value:
             Chess().play()
             sys.exit()
 
-        elif input_ == Commands.NO.value:
+        elif input_ == GameCommands.NO.value:
             sys.exit()
 
-        elif input_ == Commands.SAVE_MOVE_HISTORY.value:
+        elif input_ == GameCommands.SAVE_MOVE_HISTORY.value:
             self._save_move_history()
 
-        elif input_ == Commands.HELP.value:
+        elif input_ == GameCommands.HELP.value:
             # TODO: Add help message
             print("Help message")
 
