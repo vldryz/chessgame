@@ -19,14 +19,14 @@
 ## How to play
 1. Run *main.py* in ternimal or an IDE of your choice.
    
-    ![Chess board](/Screenshots_for_readme/chess_board_default.png "Chess board")   
+    ![Chess board](/docs/chess_board_default.png "Chess board")   
 2. To move a piece please enter start position + end position. For example, 'e2e4' will move the e2 pawn to e4.
 
-    ![Chess board](/Screenshots_for_readme/chess_board_e2e4.png "Chess board")
+    ![Chess board](/docs/chess_board_e2e4.png "Chess board")
 
     Then, if Black wants to respond with Nc6 move, they should type 'b8c6'.
 
-    ![Chess board](/Screenshots_for_readme/chess_board_b8c6.png "Chess board")
+    ![Chess board](/docs/chess_board_b8c6.png "Chess board")
 3. If a player wants to play short castle, type: 'O-O' \
    If a player wants to play long castle, type: 'O-O-O'
 4. The game ends when a player gets checkmated or in a stalemate if a player has no available legal moves.
