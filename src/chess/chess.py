@@ -45,7 +45,7 @@ class Chess:
         while True:
             raw_input: str = self._request_input(f"{self.turn.value} to move on move {self.move_number}.\n"
                                                  f"Enter your move: ")
-            processed_input: Commands = self._process_input(raw_input)
+            processed_input = self._process_input(raw_input)
 
             if processed_input != Commands.MOVE:
                 self._handle_game_command(processed_input)
@@ -54,6 +54,7 @@ class Chess:
             if not self.board.make_move(raw_input, self.turn):
                 continue
 
+            # End of turn actions
             self._increment_move()
             self._change_turn()
 
