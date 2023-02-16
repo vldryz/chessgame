@@ -6,8 +6,8 @@ from contextlib import suppress
 from enum import Enum
 
 # Dependencies
-from chess.board import Board
-from chess.colours import Colour
+from .board import Board
+from .colours import Colour
 
 # ———————————————————————————————————————————— Code ———————————————————————————————————————————— #
 

@@ -4,8 +4,7 @@
 from abc import ABC, abstractmethod
 
 # Dependencies
-from chess.board import Board
-from chess.colours import Colour
+from ..colours import Colour
 
 # ———————————————————————————————————————————— Code ———————————————————————————————————————————— #
 
@@ -21,7 +20,7 @@ class Piece(ABC):
         return self.icon
 
     @abstractmethod
-    def legal_moves(self, start, board: Board) -> list[tuple[int, int]]:
+    def legal_moves(self, start) -> list[tuple[int, int]]:
         """The method to get a list of legal moves for a piece.
 
         Legal moves are defined as a subset of available moves
@@ -44,7 +43,7 @@ class Piece(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def _available_moves(self, start, board: Board) -> list[tuple[int, int]]:
+    def _available_moves(self, start) -> list[tuple[int, int]]:
         """The method to get a list of available moves for a piece.
 
         Available moves are defined as moves to which a piece can

@@ -3,11 +3,12 @@
 # Standard libraries
 from typing import Optional
 from contextlib import suppress
+from itertools import product
 from enum import Enum
 
 # Dependencies
-from chess.pieces import *
-from chess.colours import Colour
+from .pieces import *
+from .colours import Colour
 
 # ———————————————————————————————————————————— Code ———————————————————————————————————————————— #
 
@@ -51,7 +52,7 @@ class Board:
                 Knight(Colour.BLACK),
                 Rook(Colour.BLACK),
             ],
-        ]
+            ]
 
     def make_move(self, raw_input: str, turn: Colour) -> bool:
         """Makes a move on the board.
@@ -66,8 +67,11 @@ class Board:
         """
         move = self._process_input(raw_input)
 
-        if move in {MoveCommands.SHORT_CASTLE, MoveCommands.LONG_CASTLE}:
-            return self.castle(move, turn)
+        if move == MoveCommands.SHORT_CASTLE:
+            return self._short_castle(turn)
+
+        if move == MoveCommands.LONG_CASTLE:
+            return self._short_castle(turn)
 
         # unpacking with walrus operator is not supported
         if not (coordinates := self._notation_to_coordinates(raw_input)):
@@ -83,7 +87,7 @@ class Board:
 
         Args:
             start (tuple[int, int]): The starting position of the piece.
-            end (tuple[int, int]): The ending position of the piece.
+            end (tuple[int, int]): The ending position of the move.
             turn (Colour): The colour of the pieces of the player making the move.
 
         Returns:
@@ -112,11 +116,10 @@ class Board:
 
         return True
 
-    def castle(self, move: MoveCommands, turn: Colour) -> bool:
-        """Performs a castle.
+    def _short_castle(self, turn: Colour) -> bool:
+        """Performs a short castle.
 
         Args:
-            move (MoveCommands): The type of castle to perform.
             turn (Colour): The colour of the pieces of the player making the move.
 
         Returns:
@@ -124,27 +127,117 @@ class Board:
 
         """
 
-        if move == MoveCommands.SHORT_CASTLE:
-            if turn == Colour.WHITE:
-                king = self.state[0][4]
-                rook = self.state[0][7]
-                in_between_squares = [[0, 5], [0, 6]]
+        file = 0 if turn == Colour.WHITE else 7
 
-            else:
-                king = self.state[7][4]
-                rook = self.state[7][7]
-                in_between_squares = [[7, 5], [7, 6]]
+        king = self.state[file][4]
+        rook = self.state[file][7]
+        in_between_squares = [(file, 5), (file, 6)]
 
-        else:
-            if turn == Colour.WHITE:
-                king = self.state[0][4]
-                rook = self.state[0][0]
-                in_between_squares = [[0, 2], [0, 3]]
-            else:
-                king = self.state[7][4]
-                rook = self.state[7][0]
-                in_between_squares = [[7, 2], [7, 3]]
+        if not isinstance(king, King) or not isinstance(rook, Rook) or king.moved or rook.moved:
+            print("Invalid Move: King or Rook has been moved.\n")
+            return False
 
+        if king.checked:
+            print("Invalid Move: Cannot castle under check.\n")
+            return False
+
+        for file_, rank_ in in_between_squares:
+            if self.state[file_][rank_]:
+                print("Invalid Move: Cannot castle through another piece.\n")
+                return False
+
+            self.state[file_][rank_] = king
+
+            if self._king_checked(turn):
+                print("Invalid Move: Cannot castle through check.\n")
+                return False
+
+        self.state[file][4] = None
+        self.state[file][5] = rook
+        self.state[file][6] = king
+        self.state[file][7] = None
+
+        return True
+
+    def _long_castle(self, turn: Colour) -> bool:
+        """Performs a long castle.
+
+        Args:
+            turn (Colour): The colour of the pieces of the player making the move.
+
+        Returns:
+            bool: Whether the move was played. False if the move was illegal.
+
+        """
+
+        file = 0 if turn == Colour.WHITE else 7
+
+        king: Optional[King] = self.state[file][4]
+        rook: Optional[Rook] = self.state[file][0]
+        in_between_squares = [(file, 2), (file, 3)]
+        check_for_pieces = in_between_squares + [(file, 1)]
+
+        if king.checked:
+            print(f"Invalid Move: Cannot castle under check.\n")
+            return False
+
+        if not king or not rook or king.moved or rook.moved:
+            print(f"Invalid Move: King or Rook has been moved.\n")
+            return False
+
+        for square in check_for_pieces:
+            if square:
+                print(f"Invalid Move: Cannot castle through another piece.\n")
+                return False
+
+        self.state[file][0] = None
+        self.state[file][2] = king
+        self.state[file][3] = rook
+        self.state[file][4] = None
+
+        return True
+
+    def _king_checked(self, turn: Colour) -> bool:
+        """Checks whether the king of a player is checked.
+
+        Args:
+            turn (Colour): The colour of the pieces of the player making the move.
+
+        Returns:
+            bool: Whether the king is checked.
+
+        """
+
+        file, rank = self._find_king(turn)
+        king = self.state[file][rank]
+
+        for file_, rank_ in product(range(8), range(8)):
+            piece = self.state[file_][rank_]
+            if piece and piece.colour != turn:
+                if (file, rank) in piece.legal_moves((file_, rank_), self):
+                    return True
+
+        return False
+
+
+    def _find_king(self, turn: Colour) -> tuple[int, int]:
+        """Finds the position of the king of the player.
+
+        Args:
+            turn (Colour): The colour of the pieces of the player making the move.
+
+        Returns:
+            tuple[int, int]: The coordinates of the king.
+
+        """
+
+        file, rank = -1, -1
+        for file, rank in product(range(8), range(8)):
+            piece = self.state[file][rank]
+            if isinstance(piece, King) and piece.colour == turn:
+                return file, rank
+
+        return file, rank
 
     @staticmethod
     def _process_input(raw_input: str) -> MoveCommands:

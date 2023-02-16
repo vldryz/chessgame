@@ -1,1 +1,1 @@
-from chess.pieces.pieces import Pawn, Knight, Bishop, Rook, Queen, King
+from .piece_classes import Pawn, Knight, Bishop, Rook, Queen, King
