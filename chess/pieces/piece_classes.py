@@ -10,6 +10,9 @@ from chess.colour import Colour
 # ———————————————————————————————————————————— Code ———————————————————————————————————————————— #
 
 
+Square = tuple[int, int]
+
+
 class Pawn(Piece):
     def __init__(self, colour: Colour):
         super().__init__(colour, "♟" if colour == Colour.WHITE else "♙")
@@ -17,7 +20,7 @@ class Pawn(Piece):
         # Pawn-specific attributes
         self.en_passant: bool = False
 
-    def possible_moves(self, start: tuple[int, int]) -> list[tuple[int, int]]:
+    def possible_moves(self, start: Square) -> list[Square]:
 
         diff = 1 if self.colour == Colour.WHITE else -1
         moves = [(start[0] + diff, start[1])]
@@ -41,7 +44,7 @@ class King(Piece):
         # King-specific attributes
         self.checked: bool = False
 
-    def possible_moves(self, start: tuple[int, int]) -> list[tuple[int, int]]:
+    def possible_moves(self, start: Square) -> list[Square]:
         moves = [
             (start[0] + rank, start[1] + file)
             for rank, file in product(range(-1, 2), range(-1, 2))
@@ -55,7 +58,7 @@ class Knight(Piece):
     def __init__(self, colour: Colour):
         super().__init__(colour, "♞" if colour == Colour.WHITE else "♘")
 
-    def possible_moves(self, start: tuple[int, int]) -> list[tuple[int, int]]:
+    def possible_moves(self, start: Square) -> list[Square]:
         moves = [
             (start[0] + rank, start[1] + file)
             for i, j in product((-1, 1), (-2, 2))
@@ -69,7 +72,7 @@ class Bishop(Piece):
     def __init__(self, colour: Colour):
         super().__init__(colour, "♝" if colour == Colour.WHITE else "♗")
 
-    def possible_moves(self, start: tuple[int, int]) -> list[tuple[int, int]]:
+    def possible_moves(self, start: Square) -> list[Square]:
         moves = [
             (start[0] + rank, start[1] + file)
             for i, j in zip(range(1, 8), range(-1, -8, -1))
@@ -83,7 +86,7 @@ class Rook(Piece):
     def __init__(self, colour: Colour):
         super().__init__(colour, "♜" if colour == Colour.WHITE else "♖")
 
-    def possible_moves(self, start: tuple[int, int]) -> list[tuple[int, int]]:
+    def possible_moves(self, start: Square) -> list[Square]:
         return [(start[0], file) for file in range(8) if file != start[1]] + [
             (rank, start[1]) for rank in range(8) if rank != start[0]
         ]
@@ -93,7 +96,7 @@ class Queen(Piece):
     def __init__(self, colour: Colour):
         super().__init__(colour, "♛" if colour == Colour.WHITE else "♕")
 
-    def possible_moves(self, start: tuple[int, int]) -> list[tuple[int, int]]:
+    def possible_moves(self, start: Square) -> list[Square]:
         moves = [
             (start[0] + rank, start[1] + file)
             for i, j in zip(range(1, 8), range(-1, -8, -1))
