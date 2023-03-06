@@ -2,17 +2,18 @@
 # ——————————————————————————————————————————— Imports ——————————————————————————————————————————— #
 # Standard libraries
 import sys
-from contextlib import suppress
-from enum import Enum
+from typing import Self
+from enum import StrEnum
 
 # Dependencies
-from .board import Board
-from .colours import Colour
+from chess.board import Board
+from chess.colours import Colour
+from chess.user_interaction import request_input
 
 # ———————————————————————————————————————————— Code ———————————————————————————————————————————— #
 
 
-class GameCommands(Enum):
+class GameCommands(StrEnum):
     """Enum class for commands."""
     YES = "yes"
     NO = "no"
@@ -23,12 +24,13 @@ class GameCommands(Enum):
     RESIGN = "resign"
     DRAW = "draw"
     PRINT_BOARD = "print board"
+    MISSING = "missing"  # Default value for missing commands
+    MOVE = "move"  # Default command to play a move
+    LOAD = "load"  # Implement in the future
 
-    # Default command to play a move
-    MOVE = "move"
-
-    # Implement in the future
-    LOAD = "load from move history"
+    @classmethod
+    def _missing_(cls, value: str) -> Self:
+        return cls.MISSING
 
 
 class Chess:
@@ -43,12 +45,12 @@ class Chess:
         print(self.board)
 
         while True:
-            raw_input: str = self._request_input(f"{self.turn.value} to move on move {self.move_number}.\n"
-                                                 f"Enter your move: ")
-            processed_input = self._process_input(raw_input)
+            raw_input = request_input(f"{self.turn.value} to move on move {self.move_number}.\n"
+                                      f"Enter your move: ")
+            command = GameCommands(raw_input)
 
-            if processed_input != GameCommands.MOVE:
-                self._handle_game_command(processed_input)
+            if command != GameCommands.MOVE:
+                self._handle_game_command(command)
                 continue
 
             if not self.board.make_move(raw_input, self.turn):
@@ -59,44 +61,6 @@ class Chess:
             self._change_turn()
 
             print(self.board)
-
-    @staticmethod
-    def _request_input(prompt: str = "") -> str:
-        """Requests a move from a user.
-
-        Args:
-            prompt (str): The prompt to display to the user.
-
-        Returns:
-            str: The user's input.
-
-        """
-
-        return input(prompt).lower()
-
-    @staticmethod
-    def _process_input(raw_input: str) -> GameCommands:
-        """Processes a user's input.
-
-        We use this method to request a move from the user.
-        It will first try to convert the input to a non-move
-        command. If it fails, it will consider the input a move.
-
-        Args:
-            raw_input (str): The user's input.
-
-        Returns:
-            GameCommands: The command to perform.
-
-        """
-
-        # in Python 3.12 it will be possible to check whether a string is
-        # one of the values of an Enum instead of using a suppression method.
-
-        with suppress(ValueError):
-            return GameCommands(raw_input)
-
-        return GameCommands.MOVE
 
     def _increment_move(self):
         self.move_number += 1
