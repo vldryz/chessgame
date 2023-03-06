@@ -1,26 +1,32 @@
 """This module provides the board class used to manage the state of the chess board."""
 # ——————————————————————————————————————————— Imports ——————————————————————————————————————————— #
 # Standard libraries
+from typing import Self
 from contextlib import suppress
 from itertools import product
-from enum import Enum
+from enum import StrEnum
 
 # Dependencies
 from chess.pieces import Pawn, King, Knight, Rook, Bishop, Queen
 from chess.colours import Colour
-from chess.user_interaction import UserInteraction
+from chess.user_interaction import request_input
 
 # ———————————————————————————————————————————— Code ———————————————————————————————————————————— #
 
 
-class MoveCommands(Enum):
+class MoveCommands(StrEnum):
     """Enum class for moves."""
-
     SHORT_CASTLE = "o-o"
     LONG_CASTLE = "o-o-o"
+    PIECE_MOVE = "piece move"  # Default command to play a move
 
-    # Default command to play a move
-    PIECE_MOVE = "piece move"
+    @classmethod
+    def _missing_(cls, value: str) -> Self:
+        return cls.PIECE_MOVE
+
+
+class PromotionOptions(StrEnum):
+    ...
 
 
 class Board:
