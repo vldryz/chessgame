@@ -6,14 +6,11 @@ from itertools import product
 from enum import StrEnum, Enum
 
 # Dependencies
-from chess.pieces import Pawn, King, Knight, Rook, Bishop, Queen
+from chess.pieces import Pawn, King, Knight, Rook, Bishop, Queen, Square
 from chess.colour import Colour
 from chess.user_interaction import request_input
 
 # ———————————————————————————————————————————— Code ———————————————————————————————————————————— #
-
-
-Square = tuple[int, int]
 
 
 class MoveCommand(StrEnum):
