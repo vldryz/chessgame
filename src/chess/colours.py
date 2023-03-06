@@ -8,5 +8,8 @@ from enum import StrEnum
 
 class Colour(StrEnum):
     """Enum class for piece colours."""
-    WHITE = "White"
-    BLACK = "Black"
+    WHITE = "white"
+    BLACK = "black"
+
+    def __str__(self) -> str:
+        return self.value.title()
