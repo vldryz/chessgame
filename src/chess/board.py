@@ -1,20 +1,21 @@
 """This module provides the board class used to manage the state of the chess board."""
 # ——————————————————————————————————————————— Imports ——————————————————————————————————————————— #
 # Standard libraries
-from typing import Optional
 from contextlib import suppress
 from itertools import product
 from enum import Enum
 
 # Dependencies
-from .pieces import *
-from .colours import Colour
+from chess.pieces import Pawn, King, Knight, Rook, Bishop, Queen
+from chess.colours import Colour
+from chess.user_interaction import UserInteraction
 
 # ———————————————————————————————————————————— Code ———————————————————————————————————————————— #
 
 
 class MoveCommands(Enum):
     """Enum class for moves."""
+
     SHORT_CASTLE = "o-o"
     LONG_CASTLE = "o-o-o"
 
@@ -24,8 +25,9 @@ class MoveCommands(Enum):
 
 class Board:
     """Class used to manage the state of the chess board."""
+
     def __init__(self):
-        self.state: list[list[Rook | Knight | Bishop | King | Queen | Pawn | None]] = [
+        self.state: list[list[Pawn | King | Knight | Rook | Bishop | Queen | None]] = [
             [
                 Rook(Colour.WHITE),
                 Knight(Colour.WHITE),
@@ -52,7 +54,7 @@ class Board:
                 Knight(Colour.BLACK),
                 Rook(Colour.BLACK),
             ],
-            ]
+        ]
 
     def make_move(self, raw_input: str, turn: Colour) -> bool:
         """Makes a move on the board.
@@ -62,9 +64,10 @@ class Board:
             turn (Colour): The colour of the pieces of the player making the move.
 
         Returns:
-            bool: Whether the move was played. False if the move was illegal.
+            bool: Whether the move was played. False otherwise.
 
         """
+
         move = self._process_input(raw_input)
 
         if move == MoveCommands.SHORT_CASTLE:
@@ -74,15 +77,15 @@ class Board:
             return self._short_castle(turn)
 
         # unpacking with walrus operator is not supported
-        if not (coordinates := self._notation_to_coordinates(raw_input)):
+        if not (coordinates := self._user_input_notation_to_coordinates(raw_input)):
             return False
 
         start, end = coordinates
 
-        if not self.move_piece(start, end, turn):
+        if not self._move_piece(start, end, turn):
             return False
 
-    def move_piece(self, start: tuple[int, int], end: tuple[int, int], turn: Colour) -> bool:
+    def _move_piece(self, start: tuple[int, int], end: tuple[int, int], turn: Colour) -> bool:
         """The function to process a move.
 
         Args:
@@ -91,30 +94,119 @@ class Board:
             turn (Colour): The colour of the pieces of the player making the move.
 
         Returns:
-            bool: Whether the move was played. False if the move was illegal.
+            bool: Whether the move was played. False otherwise.
 
         """
 
-        piece = self.state[start[0]][start[1]]
+        start_rank, start_file = start
+        end_rank, end_file = end
+
+        piece = self.state[start_rank][start_file]
         if not piece:
-            print(f"Invalid Move: There is no piece at {start}.\n")
+            print(f"Invalid Move: There is no piece at {self._square_coordinates_to_notation(start)}.\n")
             return False
 
         if piece.colour != turn:
             print(f"Invalid Move: It is {turn}'s turn.\n")
             return False
 
-        if end not in piece.legal_moves(start, self):
-            print(f"Invalid Move: {piece} cannot move to {end}.\n")
+        if not self._legal_move(start, end):
+            print(f"Invalid Move: {piece} cannot move to {self._square_coordinates_to_notation(end)}.\n")
             return False
 
-
-
-        self.state[end[0]][end[1]] = piece
-        self.state[start[0]][start[1]] = None
+        self.state[end_rank][end_file] = piece
+        self.state[start_rank][start_file] = None
         piece.moved = True
 
         return True
+
+    def _legal_move(self, start: tuple[int, int], end: tuple[int, int]) -> bool:
+        """Checks whether a move is legal.
+
+        Args:
+            start (tuple[int, int]): The starting position of the piece.
+            end (tuple[int, int]): The ending position of the move.
+
+        Returns:
+            bool: Whether the move is legal.
+
+        """
+
+        piece = self.state[start[0]][start[1]]
+
+        if isinstance(piece, Pawn):
+            return self._legal_pawn_move(piece, start, end)
+
+        if isinstance(piece, Knight):
+            return self._legal_knight_move(piece, start, end)
+
+        if isinstance(piece, Bishop):
+            return self._legal_bishop_move(piece, start, end)
+
+        if isinstance(piece, Rook):
+            return self._legal_rook_move(piece, start, end)
+
+        if isinstance(piece, King):
+            return self._legal_king_move(piece, start, end)
+
+        return self._legal_queen_move(piece, start, end)
+
+    def _legal_pawn_move(self, piece: Pawn, start: tuple[int, int], end: tuple[int, int]) -> bool:
+        """Checks whether a pawn move is legal.
+
+        Args:
+            piece (Pawn): The pawn to move.
+            start (tuple[int, int]): The starting position of the piece.
+            end (tuple[int, int]): The ending position of the move.
+
+        Returns:
+            bool: Whether the move is legal.
+
+        """
+
+        if end not in piece.possible_moves(start):
+            return False
+
+        start_rank, start_file = start
+        end_rank, end_file = end
+
+        diff = 1 if piece.colour == Colour.WHITE else -1
+
+        if self.state[end_rank][end_file]:
+            if abs(start_rank - end_rank) == 1 and abs(start_file - end_file) == 1:
+                return True
+
+        else:
+            if start_rank == end_rank:
+                if start_file == 1 and end_file == 3:
+                    return True
+                if start_file == 6 and end_file == 4:
+                    return True
+                if abs(start_file - end_file) == 1:
+                    return True
+
+        return False
+
+    def _king_checked(self, turn: Colour) -> bool:
+        """Checks whether the king of a player is checked.
+
+        Args:
+            turn (Colour): The colour of the pieces of the player making the move.
+
+        Returns:
+            bool: Whether the king is checked.
+
+        """
+
+        king_rank, king_file = self._find_king(turn)
+
+        for rank_, file_ in product(range(8), range(8)):
+            piece = self.state[rank_][file_]
+            if piece and piece.colour != turn:
+                if (king_rank, king_file) in self._legal_move((rank_, file_)):
+                    return True
+
+        return False
 
     def _short_castle(self, turn: Colour) -> bool:
         """Performs a short castle.
@@ -127,13 +219,18 @@ class Board:
 
         """
 
-        file = 0 if turn == Colour.WHITE else 7
+        rank = 0 if turn == Colour.WHITE else 7
 
-        king = self.state[file][4]
-        rook = self.state[file][7]
-        in_between_squares = [(file, 5), (file, 6)]
+        king = self.state[rank][4]
+        rook = self.state[rank][7]
+        in_between_squares = [(rank, 5), (rank, 6)]
 
-        if not isinstance(king, King) or not isinstance(rook, Rook) or king.moved or rook.moved:
+        if (
+            not isinstance(king, King)
+            or not isinstance(rook, Rook)
+            or king.moved
+            or rook.moved
+        ):
             print("Invalid Move: King or Rook has been moved.\n")
             return False
 
@@ -141,21 +238,21 @@ class Board:
             print("Invalid Move: Cannot castle under check.\n")
             return False
 
-        for file_, rank_ in in_between_squares:
-            if self.state[file_][rank_]:
+        for rank_, file_ in in_between_squares:
+            if self.state[rank_][file_]:
                 print("Invalid Move: Cannot castle through another piece.\n")
                 return False
 
-            self.state[file_][rank_] = king
+            self.state[rank_][file_] = king
 
             if self._king_checked(turn):
                 print("Invalid Move: Cannot castle through check.\n")
                 return False
 
-        self.state[file][4] = None
-        self.state[file][5] = rook
-        self.state[file][6] = king
-        self.state[file][7] = None
+        self.state[rank][4] = None
+        self.state[rank][5] = rook
+        self.state[rank][6] = king
+        self.state[rank][7] = None
 
         return True
 
@@ -170,55 +267,45 @@ class Board:
 
         """
 
-        file = 0 if turn == Colour.WHITE else 7
+        rank = 0 if turn == Colour.WHITE else 7
 
-        king: Optional[King] = self.state[file][4]
-        rook: Optional[Rook] = self.state[file][0]
-        in_between_squares = [(file, 2), (file, 3)]
-        check_for_pieces = in_between_squares + [(file, 1)]
+        king: King | None = self.state[rank][4]
+        rook: Rook | None = self.state[rank][0]
+        in_between_squares = [(rank, 2), (rank, 3)]
+        check_for_pieces = in_between_squares + [(rank, 1)]
+
+        if (
+            not isinstance(king, King)
+            or not isinstance(rook, Rook)
+            or king.moved
+            or rook.moved
+        ):
+            print("Invalid Move: King or Rook has been moved.\n")
+            return False
 
         if king.checked:
-            print(f"Invalid Move: Cannot castle under check.\n")
+            print("Invalid Move: Cannot castle under check.\n")
             return False
 
-        if not king or not rook or king.moved or rook.moved:
-            print(f"Invalid Move: King or Rook has been moved.\n")
-            return False
-
-        for square in check_for_pieces:
-            if square:
+        for rank_, file_ in check_for_pieces:
+            if self.state[rank_][file_]:
                 print(f"Invalid Move: Cannot castle through another piece.\n")
                 return False
 
-        self.state[file][0] = None
-        self.state[file][2] = king
-        self.state[file][3] = rook
-        self.state[file][4] = None
+        # TODO: king is left there
+        for rank_, file_ in in_between_squares:
+            self.state[rank_][file_] = king
+
+            if self._king_checked(turn):
+                print("Invalid Move: Cannot castle through check.\n")
+                return False
+
+        self.state[rank][0] = None
+        self.state[rank][2] = king
+        self.state[rank][3] = rook
+        self.state[rank][4] = None
 
         return True
-
-    def _king_checked(self, turn: Colour) -> bool:
-        """Checks whether the king of a player is checked.
-
-        Args:
-            turn (Colour): The colour of the pieces of the player making the move.
-
-        Returns:
-            bool: Whether the king is checked.
-
-        """
-
-        file, rank = self._find_king(turn)
-        king = self.state[file][rank]
-
-        for file_, rank_ in product(range(8), range(8)):
-            piece = self.state[file_][rank_]
-            if piece and piece.colour != turn:
-                if (file, rank) in piece.legal_moves((file_, rank_), self):
-                    return True
-
-        return False
-
 
     def _find_king(self, turn: Colour) -> tuple[int, int]:
         """Finds the position of the king of the player.
@@ -231,13 +318,13 @@ class Board:
 
         """
 
-        file, rank = -1, -1
-        for file, rank in product(range(8), range(8)):
-            piece = self.state[file][rank]
+        rank, file = -1, -1
+        for rank, file in product(range(8), range(8)):
+            piece = self.state[rank][file]
             if isinstance(piece, King) and piece.colour == turn:
-                return file, rank
+                return rank, file
 
-        return file, rank
+        return rank, file
 
     @staticmethod
     def _process_input(raw_input: str) -> MoveCommands:
@@ -261,7 +348,7 @@ class Board:
         return MoveCommands.PIECE_MOVE
 
     @staticmethod
-    def _notation_to_coordinates(notation: str) -> Optional[tuple[tuple[int, int], tuple[int, int]]]:
+    def _user_input_notation_to_coordinates(notation: str) -> tuple[tuple[int, int], tuple[int, int]] | None:
         """Converts a chess notation to a tuple of board coordinates.
 
         Args:
@@ -269,7 +356,7 @@ class Board:
 
         Returns:
             Optional[tuple[tuple[int, int], tuple[int, int]]]:
-                The file and rank of the start and end squares of the move.
+                The rank and file of the start and end squares of the move.
                 None if the move is invalid.
 
         """
@@ -278,28 +365,43 @@ class Board:
             print(f"Invalid Move: {notation} is not a valid move.\n")
             return None
 
-        ranks = ["a", "b", "c", "d", "e", "f", "g", "h"]
+        files = ["a", "b", "c", "d", "e", "f", "g", "h"]
 
-        rank_start, rank_end = notation[0], notation[2]
-        file_start, file_end = notation[1], notation[3]
+        file_start, file_end = notation[0], notation[2]
+        rank_start, rank_end = notation[1], notation[3]
 
         # Check if the start and end ranks are valid
-        if not {rank_start, rank_end}.issubset(set(ranks)):
-            print("Invalid Move: Rank selection is invalid.\n")
+        if not {file_start, file_end}.issubset(set(files)):
+            print("Invalid Move: File selection is invalid.\n")
             return None
 
         # Check if the start and end files are valid
         if not all(
-                file.isdigit() or int(file) not in range(1, 9)
-                for file in {file_start, file_end}
+            rank.isdigit() or int(rank) not in range(1, 9)
+            for rank in {rank_start, rank_end}
         ):
-            print("Invalid Move: File selection is invalid.\n")
+            print("Invalid Move: Rank selection is invalid.\n")
             return None
 
         return (
-            (int(file_start) - 1, ranks.index(rank_start)),
-            (int(file_end) - 1, ranks.index(rank_end)),
+            (int(rank_start) - 1, files.index(file_start)),
+            (int(rank_end) - 1, files.index(file_end)),
         )
+
+    @staticmethod
+    def _square_coordinates_to_notation(square: tuple[int, int]) -> str:
+        """Converts a square's coordinates to chess notation.
+
+        Args:
+            square (tuple[int, int]): The coordinates of the square.
+
+        Returns:
+            str: The square's coordinates in chess notation.
+
+        """
+
+        files = ["a", "b", "c", "d", "e", "f", "g", "h"]
+        return files[square[1]] + str(square[0] + 1)
 
     def __str__(self):
         return (
