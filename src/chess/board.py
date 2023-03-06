@@ -2,9 +2,8 @@
 # ——————————————————————————————————————————— Imports ——————————————————————————————————————————— #
 # Standard libraries
 from typing import Self
-from contextlib import suppress
 from itertools import product
-from enum import StrEnum
+from enum import StrEnum, Enum
 
 # Dependencies
 from chess.pieces import Pawn, King, Knight, Rook, Bishop, Queen
@@ -18,6 +17,7 @@ class MoveCommands(StrEnum):
     """Enum class for moves."""
     SHORT_CASTLE = "o-o"
     LONG_CASTLE = "o-o-o"
+    HELP = "help"
     PIECE_MOVE = "piece move"  # Default command to play a move
 
     @classmethod
@@ -25,17 +25,26 @@ class MoveCommands(StrEnum):
         return cls.PIECE_MOVE
 
 
-class Promotion(StrEnum):
+class PromotionOptions(StrEnum):
     """Enum class for promotion options."""
     QUEEN = "q"
     ROOK = "r"
     KNIGHT = "k"
     BISHOP = "b"
+    HELP = "help"
     INVALID = "INVALID"  # Default value for invalid commands
 
     @classmethod
     def _missing_(cls, value: str) -> Self:
         return cls.INVALID
+
+
+class PromotionPiece(Enum):
+    """Enum class for promotion piece types."""
+    KNIGHT = Knight
+    ROOK = Rook
+    BISHOP = Bishop
+    QUEEN = Queen
 
 
 class Board:
@@ -83,9 +92,7 @@ class Board:
 
         """
 
-        move = self._process_input(raw_input)
-
-        if move == MoveCommands.SHORT_CASTLE:
+        if (move := MoveCommands(raw_input)) == MoveCommands.SHORT_CASTLE:
             return self._short_castle(turn)
 
         if move == MoveCommands.LONG_CASTLE:
@@ -135,8 +142,8 @@ class Board:
         self.state[start_rank][start_file] = None
         piece.moved = True
 
-        if isinstance(piece, Pawn) and end_rank == 7 if piece.colour == Colour.WHITE else 0:
-            self._pawn_promotion(end, piece.colour)
+        if isinstance(piece, Pawn) and end_rank == 7 if turn == Colour.WHITE else 0:
+            self._pawn_promotion(end, turn)
 
         return True
 
@@ -346,26 +353,11 @@ class Board:
 
         return rank, file
 
-    @staticmethod
-    def _process_input(raw_input: str) -> MoveCommands:
-        """Gets the type of move.
-
-        The method first checks whether the input is a command like
-        castling. If it is, it returns the corresponding move type.
-        If it is not, it assumes the input is a piece move.
-
-        Args:
-            raw_input (str): The move to get the type of.
-
-        Returns:
-            MoveCommands: The type of move.
-
-        """
-
-        with suppress(ValueError):
-            return MoveCommands(raw_input)
-
-        return MoveCommands.PIECE_MOVE
+    def _pawn_promotion(self, end: tuple[int, int], turn: Colour) -> None:
+        """This function handles pawn promotion."""
+        rank, file = end
+        choice = PromotionOptions(request_input("Pick a piece to promote to (q/r/b/n):"))
+        self.state[rank][file] = PromotionPiece[choice.name].value(turn)
 
     @staticmethod
     def _user_input_notation_to_coordinates(notation: str) -> tuple[tuple[int, int], tuple[int, int]] | None:
