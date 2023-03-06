@@ -1,4 +1,4 @@
-"""This module provides the functions to communicate with players."""
+"""This module provides the function to request input from players."""
 
 
 def request_input(prompt: str = "") -> str:
