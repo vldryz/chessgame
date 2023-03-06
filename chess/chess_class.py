@@ -13,7 +13,7 @@ from chess.user_interaction import request_input
 # ———————————————————————————————————————————— Code ———————————————————————————————————————————— #
 
 
-class GameCommands(StrEnum):
+class GameCommand(StrEnum):
     """Enum class for commands."""
     YES = "yes"
     NO = "no"
@@ -47,7 +47,7 @@ class Chess:
             raw_input = request_input(f"{self.turn.value} to move on move {self.move_number}.\n"
                                       f"Enter your move: ")
 
-            if (command := GameCommands(raw_input)) != GameCommands.MOVE:
+            if (command := GameCommand(raw_input)) != GameCommand.MOVE:
                 self._handle_game_command(command)
                 continue
 
@@ -60,32 +60,32 @@ class Chess:
 
             print(self.board)
 
-    def _handle_game_command(self, command: GameCommands) -> None:
+    def _handle_game_command(self, command: GameCommand) -> None:
         """Handles a command input."""
-        if command == GameCommands.HELP:
+        if command == GameCommand.HELP:
             # TODO: Add help message
             print("Help message")
 
-        elif command == GameCommands.RESIGN:
+        elif command == GameCommand.RESIGN:
             print(f"{self.turn.value} resigns. "
                   f"{Colour.WHITE.value if self.turn == Colour.BLACK else Colour.BLACK.value} wins.")
             self._after_match()
 
-        elif command == GameCommands.DRAW:
+        elif command == GameCommand.DRAW:
             print("The match ends in a draw.")
             self._after_match()
 
-        elif command == GameCommands.RESET:
+        elif command == GameCommand.RESET:
             Chess().play()
             sys.exit()
 
-        elif command == GameCommands.SAVE_MOVE_HISTORY:
+        elif command == GameCommand.SAVE_MOVE_HISTORY:
             self._save_move_history()
 
-        elif command == GameCommands.PRINT_BOARD:
+        elif command == GameCommand.PRINT_BOARD:
             print(self.board)
 
-        elif command == GameCommands.EXIT:
+        elif command == GameCommand.EXIT:
             print("Exiting game...")
             sys.exit()
 
@@ -96,17 +96,17 @@ class Chess:
 
         # use _request_input() and say that must be command since the game is over. suggest printing help message
 
-        if input_ == GameCommands.YES.value:
+        if input_ == GameCommand.YES.value:
             Chess().play()
             sys.exit()
 
-        elif input_ == GameCommands.NO.value:
+        elif input_ == GameCommand.NO.value:
             sys.exit()
 
-        elif input_ == GameCommands.SAVE_MOVE_HISTORY.value:
+        elif input_ == GameCommand.SAVE_MOVE_HISTORY.value:
             self._save_move_history()
 
-        elif input_ == GameCommands.HELP.value:
+        elif input_ == GameCommand.HELP.value:
             # TODO: Add help message
             print("Help message")
 
