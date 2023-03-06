@@ -17,13 +17,13 @@ class GameCommands(StrEnum):
     """Enum class for commands."""
     YES = "yes"
     NO = "no"
-    HELP = "help"
     EXIT = "exit"
     SAVE_MOVE_HISTORY = "save move history"
     RESET = "reset"
     RESIGN = "resign"
     DRAW = "draw"
     PRINT_BOARD = "print board"
+    HELP = "help"
     MOVE = "move"  # Default command to play a move
     LOAD = "load"  # Implement in the future
 
