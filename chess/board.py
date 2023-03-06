@@ -86,7 +86,7 @@ class Board:
         """Makes a move on the board.
 
         Args:
-            raw_input (tuple[int, int]): The move to make.
+            raw_input (Square): The move to make.
             turn (Colour): The colour of the pieces of the player making the move.
 
         Returns:
@@ -113,8 +113,8 @@ class Board:
         """The function to process a move.
 
         Args:
-            start (tuple[int, int]): The starting position of the piece.
-            end (tuple[int, int]): The ending position of the move.
+            start (Square): The starting position of the piece.
+            end (Square): The ending position of the move.
             turn (Colour): The colour of the pieces of the player making the move.
 
         Returns:
@@ -151,8 +151,8 @@ class Board:
         """Checks whether a move is legal.
 
         Args:
-            start (tuple[int, int]): The starting position of the piece.
-            end (tuple[int, int]): The ending position of the move.
+            start (Square): The starting position of the piece.
+            end (Square): The ending position of the move.
 
         Returns:
             bool: Whether the move is legal.
@@ -183,8 +183,8 @@ class Board:
 
         Args:
             piece (Pawn): The pawn to move.
-            start (tuple[int, int]): The starting position of the piece.
-            end (tuple[int, int]): The ending position of the move.
+            start (Square): The starting position of the piece.
+            end (Square): The ending position of the move.
 
         Returns:
             bool: Whether the move is legal.
@@ -341,7 +341,7 @@ class Board:
             turn (Colour): The colour of the pieces of the player making the move.
 
         Returns:
-            tuple[int, int]: The coordinates of the king.
+            Square: The coordinates of the king.
 
         """
 
@@ -382,7 +382,7 @@ class Board:
             notation (str): The chess notation to convert.
 
         Returns:
-            Optional[tuple[tuple[int, int], tuple[int, int]]]:
+            Optional[tuple[Square, Square]]:
                 The rank and file of the start and end squares of the move.
                 None if the move is invalid.
 
@@ -422,7 +422,7 @@ class Board:
         """Converts a square's coordinates to chess notation.
 
         Args:
-            square (tuple[int, int]): The coordinates of the square.
+            square (Square): The coordinates of the square.
 
         Returns:
             str: The square's coordinates in chess notation.
