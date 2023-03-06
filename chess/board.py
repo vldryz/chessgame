@@ -13,7 +13,7 @@ from chess.user_interaction import request_input
 # ———————————————————————————————————————————— Code ———————————————————————————————————————————— #
 
 
-class MoveCommands(StrEnum):
+class MoveCommand(StrEnum):
     """Enum class for moves."""
     SHORT_CASTLE = "o-o"
     LONG_CASTLE = "o-o-o"
@@ -25,7 +25,7 @@ class MoveCommands(StrEnum):
         return cls.PIECE_MOVE
 
 
-class PromotionOptions(StrEnum):
+class PromotionOption(StrEnum):
     """Enum class for promotion options."""
     QUEEN = "q"
     ROOK = "r"
@@ -92,10 +92,10 @@ class Board:
 
         """
 
-        if (move := MoveCommands(raw_input)) == MoveCommands.SHORT_CASTLE:
+        if (move := MoveCommand(raw_input)) == MoveCommand.SHORT_CASTLE:
             return self._short_castle(turn)
 
-        if move == MoveCommands.LONG_CASTLE:
+        if move == MoveCommand.LONG_CASTLE:
             return self._short_castle(turn)
 
         # unpacking with walrus operator is not supported
@@ -356,7 +356,7 @@ class Board:
     def _pawn_promotion(self, end: tuple[int, int], turn: Colour) -> None:
         """This function handles pawn promotion."""
         rank, file = end
-        choice = PromotionOptions(request_input("Pick a piece to promote to (q/r/b/n):"))
+        choice = PromotionOption(request_input("Pick a piece to promote to (q/r/b/n):"))
         self.state[rank][file] = PromotionPiece[choice.name].value(turn)
 
     @staticmethod
