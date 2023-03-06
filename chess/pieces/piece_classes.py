@@ -4,13 +4,10 @@
 from itertools import product
 
 # Dependencies
-from chess.pieces.piece_base import Piece
+from chess.pieces.piece_base import Piece, Square
 from chess.colour import Colour
 
 # ———————————————————————————————————————————— Code ———————————————————————————————————————————— #
-
-
-Square = tuple[int, int]
 
 
 class Pawn(Piece):

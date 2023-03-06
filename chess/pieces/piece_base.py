@@ -9,6 +9,9 @@ from chess.colour import Colour
 # ———————————————————————————————————————————— Code ———————————————————————————————————————————— #
 
 
+Square = tuple[int, int]
+
+
 class Piece(ABC):
     """Base class for chess pieces."""
     def __init__(self, colour, icon):
@@ -20,7 +23,7 @@ class Piece(ABC):
         return self.icon
 
     # @abstractmethod
-    # def legal_moves(self, start) -> list[tuple[int, int]]:
+    # def legal_moves(self, start) -> list[Square]:
     #     """The method to get a list of legal moves for a piece.
     #
     #     Legal moves are defined as a subset of available moves
@@ -32,18 +35,18 @@ class Piece(ABC):
     #         have legal moves.
     #
     #     Args:
-    #         start (tuple[int, int]): The starting position of the piece.
+    #         start (Square): The starting position of the piece.
     #         board (Board): The board on which the piece is located.
     #
     #     Returns:
-    #         list[tuple[int, int]]: A list of legal moves for the piece.
+    #         list[Square]: A list of legal moves for the piece.
     #
     #     """
     #
     #     raise NotImplementedError()
 
     @abstractmethod
-    def possible_moves(self, start: tuple[int, int]) -> list[tuple[int, int]]:
+    def possible_moves(self, start: Square) -> list[Square]:
         """The method to get a list of available moves for a piece.
 
         Possible moves are defined as moves to which a piece can
@@ -51,10 +54,10 @@ class Piece(ABC):
         of the position of other pieces.
 
         Args:
-            start (tuple[int, int]): The starting position of the piece.
+            start (Square): The starting position of the piece.
 
         Returns:
-            list[tuple[int, int]]: A list of available moves for the piece.
+            list[Square]: A list of available moves for the piece.
 
         """
 
