@@ -25,8 +25,17 @@ class MoveCommands(StrEnum):
         return cls.PIECE_MOVE
 
 
-class PromotionOptions(StrEnum):
-    ...
+class Promotion(StrEnum):
+    """Enum class for promotion options."""
+    QUEEN = "q"
+    ROOK = "r"
+    KNIGHT = "k"
+    BISHOP = "b"
+    INVALID = "INVALID"  # Default value for invalid commands
+
+    @classmethod
+    def _missing_(cls, value: str) -> Self:
+        return cls.INVALID
 
 
 class Board:
@@ -91,6 +100,8 @@ class Board:
         if not self._move_piece(start, end, turn):
             return False
 
+
+
     def _move_piece(self, start: tuple[int, int], end: tuple[int, int], turn: Colour) -> bool:
         """The function to process a move.
 
@@ -123,6 +134,9 @@ class Board:
         self.state[end_rank][end_file] = piece
         self.state[start_rank][start_file] = None
         piece.moved = True
+
+        if isinstance(piece, Pawn) and end_rank == 7 if piece.colour == Colour.WHITE else 0:
+            self._pawn_promotion(end, piece.colour)
 
         return True
 
