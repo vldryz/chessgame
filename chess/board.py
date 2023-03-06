@@ -7,17 +7,19 @@ from enum import StrEnum, Enum
 
 # Dependencies
 from chess.pieces import Pawn, King, Knight, Rook, Bishop, Queen
-from chess.colours import Colour
+from chess.colour import Colour
 from chess.user_interaction import request_input
 
 # ———————————————————————————————————————————— Code ———————————————————————————————————————————— #
+
+
+Square = tuple[int, int]
 
 
 class MoveCommand(StrEnum):
     """Enum class for moves."""
     SHORT_CASTLE = "o-o"
     LONG_CASTLE = "o-o-o"
-    HELP = "help"
     PIECE_MOVE = "piece move"  # Default command to play a move
 
     @classmethod
@@ -107,9 +109,7 @@ class Board:
         if not self._move_piece(start, end, turn):
             return False
 
-
-
-    def _move_piece(self, start: tuple[int, int], end: tuple[int, int], turn: Colour) -> bool:
+    def _move_piece(self, start: Square, end: Square, turn: Colour) -> bool:
         """The function to process a move.
 
         Args:
@@ -147,7 +147,7 @@ class Board:
 
         return True
 
-    def _legal_move(self, start: tuple[int, int], end: tuple[int, int]) -> bool:
+    def _legal_move(self, start: Square, end: Square) -> bool:
         """Checks whether a move is legal.
 
         Args:
@@ -178,7 +178,7 @@ class Board:
 
         return self._legal_queen_move(piece, start, end)
 
-    def _legal_pawn_move(self, piece: Pawn, start: tuple[int, int], end: tuple[int, int]) -> bool:
+    def _legal_pawn_move(self, piece: Pawn, start: Square, end: Square) -> bool:
         """Checks whether a pawn move is legal.
 
         Args:
@@ -334,7 +334,7 @@ class Board:
 
         return True
 
-    def _find_king(self, turn: Colour) -> tuple[int, int]:
+    def _find_king(self, turn: Colour) -> Square:
         """Finds the position of the king of the player.
 
         Args:
@@ -353,14 +353,25 @@ class Board:
 
         return rank, file
 
-    def _pawn_promotion(self, end: tuple[int, int], turn: Colour) -> None:
+    def _pawn_promotion(self, end: Square, turn: Colour) -> None:
         """This function handles pawn promotion."""
         rank, file = end
-        choice = PromotionOption(request_input("Pick a piece to promote to (q/r/b/n):"))
-        self.state[rank][file] = PromotionPiece[choice.name].value(turn)
+        option = PromotionOption(request_input("Pick a piece to promote to (q/r/b/n):"))
+
+        if option == PromotionOption.INVALID:
+            print("Please select a valid promotion option.\n"
+                  "Type 'help' for help message.")
+            return self._pawn_promotion(end, turn)
+
+        # TODO: add a help message
+        if option == PromotionOption.HELP:
+            print("help message")
+            return self._pawn_promotion(end, turn)
+
+        self.state[rank][file] = PromotionPiece[option.name].value(turn)
 
     @staticmethod
-    def _user_input_notation_to_coordinates(notation: str) -> tuple[tuple[int, int], tuple[int, int]] | None:
+    def _user_input_notation_to_coordinates(notation: str) -> tuple[Square, Square] | None:
         """Converts a chess notation to a tuple of board coordinates.
 
         Args:
@@ -384,7 +395,8 @@ class Board:
 
         # Check if the start and end ranks are valid
         if not {file_start, file_end}.issubset(set(files)):
-            print("Invalid Move: File selection is invalid.\n")
+            print("Invalid Move: File selection is invalid.\n"
+                  "Type 'help' for help message.")
             return None
 
         # Check if the start and end files are valid
@@ -392,7 +404,8 @@ class Board:
             rank.isdigit() or int(rank) not in range(1, 9)
             for rank in {rank_start, rank_end}
         ):
-            print("Invalid Move: Rank selection is invalid.\n")
+            print("Invalid Move: Rank selection is invalid.\n"
+                  "Type 'help' for help message.")
             return None
 
         return (
@@ -401,7 +414,7 @@ class Board:
         )
 
     @staticmethod
-    def _square_coordinates_to_notation(square: tuple[int, int]) -> str:
+    def _square_coordinates_to_notation(square: Square) -> str:
         """Converts a square's coordinates to chess notation.
 
         Args:

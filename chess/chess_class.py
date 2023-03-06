@@ -7,7 +7,7 @@ from enum import StrEnum
 
 # Dependencies
 from chess.board import Board
-from chess.colours import Colour
+from chess.colour import Colour
 from chess.user_interaction import request_input
 
 # ———————————————————————————————————————————— Code ———————————————————————————————————————————— #
