@@ -55,16 +55,10 @@ class Chess:
                 continue
 
             # End of turn actions
-            self._increment_move()
-            self._change_turn()
+            self.move_number += 1
+            self.turn = Colour.WHITE if self.turn == Colour.BLACK else Colour.BLACK
 
             print(self.board)
-
-    def _increment_move(self):
-        self.move_number += 1
-
-    def _change_turn(self):
-        self.turn = Colour.WHITE if self.turn == Colour.BLACK else Colour.BLACK
 
     def _handle_game_command(self, command: GameCommands) -> None:
         """Handles a command input."""
