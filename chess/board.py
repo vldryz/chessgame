@@ -356,17 +356,21 @@ class Board:
     def _pawn_promotion(self, end: Square, turn: Colour) -> None:
         """This function handles pawn promotion."""
         rank, file = end
-        option = PromotionOption(request_input("Pick a piece to promote to (q/r/b/n):"))
 
-        if option == PromotionOption.INVALID:
-            print("Please select a valid promotion option.\n"
-                  "Type 'help' for help message.")
-            return self._pawn_promotion(end, turn)
+        while True:
+            option = PromotionOption(request_input("Pick a piece to promote to (q/r/b/n):"))
 
-        # TODO: add a help message
-        if option == PromotionOption.HELP:
-            print("help message")
-            return self._pawn_promotion(end, turn)
+            if option == PromotionOption.INVALID:
+                print("Please select a valid promotion option.\n"
+                      "Type 'help' for help message.")
+                continue
+
+            # TODO: add a help message
+            if option == PromotionOption.HELP:
+                print("help message")
+                continue
+
+            break
 
         self.state[rank][file] = PromotionPiece[option.name].value(turn)
 
