@@ -24,13 +24,12 @@ class GameCommands(StrEnum):
     RESIGN = "resign"
     DRAW = "draw"
     PRINT_BOARD = "print board"
-    MISSING = "missing"  # Default value for missing commands
     MOVE = "move"  # Default command to play a move
     LOAD = "load"  # Implement in the future
 
     @classmethod
     def _missing_(cls, value: str) -> Self:
-        return cls.MISSING
+        return cls.MOVE
 
 
 class Chess:
@@ -47,9 +46,8 @@ class Chess:
         while True:
             raw_input = request_input(f"{self.turn.value} to move on move {self.move_number}.\n"
                                       f"Enter your move: ")
-            command = GameCommands(raw_input)
 
-            if command != GameCommands.MOVE:
+            if (command := GameCommands(raw_input)) != GameCommands.MOVE:
                 self._handle_game_command(command)
                 continue
 
