@@ -13,7 +13,7 @@ from chess.user_interaction import request_input
 # ———————————————————————————————————————————— Code ———————————————————————————————————————————— #
 
 
-class MoveCommand(StrEnum):
+class _MoveCommand(StrEnum):
     """Enum class for moves."""
     SHORT_CASTLE = "o-o"
     LONG_CASTLE = "o-o-o"
@@ -24,7 +24,7 @@ class MoveCommand(StrEnum):
         return cls.PIECE_MOVE
 
 
-class PromotionOption(StrEnum):
+class _PromotionOption(StrEnum):
     """Enum class for promotion options."""
     QUEEN = "q"
     ROOK = "r"
@@ -38,7 +38,7 @@ class PromotionOption(StrEnum):
         return cls.INVALID
 
 
-class PromotionPiece(Enum):
+class _PromotionPiece(Enum):
     """Enum class for promotion piece types."""
     KNIGHT = Knight
     ROOK = Rook
@@ -91,10 +91,10 @@ class Board:
 
         """
 
-        if (move := MoveCommand(raw_input)) == MoveCommand.SHORT_CASTLE:
+        if (move := _MoveCommand(raw_input)) == _MoveCommand.SHORT_CASTLE:
             return self._short_castle(turn)
 
-        if move == MoveCommand.LONG_CASTLE:
+        if move == _MoveCommand.LONG_CASTLE:
             return self._short_castle(turn)
 
         # unpacking with walrus operator is not supported
@@ -110,8 +110,8 @@ class Board:
         """The function to process a move.
 
         Args:
-            start (Square): The starting position of the piece.
-            end (Square): The ending position of the move.
+            start (Square): The square to move from.
+            end (Square): The square to move to.
             turn (Colour): The colour of the pieces of the player making the move.
 
         Returns:
@@ -148,8 +148,8 @@ class Board:
         """Checks whether a move is legal.
 
         Args:
-            start (Square): The starting position of the piece.
-            end (Square): The ending position of the move.
+            start (Square): The square to move from.
+            end (Square): The square to move to.
 
         Returns:
             bool: Whether the move is legal.
@@ -180,8 +180,8 @@ class Board:
 
         Args:
             piece (Pawn): The pawn to move.
-            start (Square): The starting position of the piece.
-            end (Square): The ending position of the move.
+            start (Square): The square to move from.
+            end (Square): The square to move to.
 
         Returns:
             bool: Whether the move is legal.
@@ -211,39 +211,109 @@ class Board:
 
         return False
 
-    def _king_checked(self, turn: Colour) -> bool:
+    def _legal_knight_move(self, piece: Knight, start: Square, end: Square) -> bool:
+        """Checks whether a knight move is legal.
+
+        Args:
+            piece (Knight): The knight to move.
+            start (Square): The square to move from.
+            end (Square): The square to move to.
+
+        Returns:
+            bool: Whether the move is legal.
+
+        """
+        ...
+
+    def _legal_bishop_move(self, piece: Bishop, start: Square, end: Square) -> bool:
+        """Checks whether a bishop move is legal.
+
+        Args:
+            piece (Bishop): The bishop to move.
+            start (Square): The square to move from.
+            end (Square): The square to move to.
+
+        Returns:
+            bool: Whether the move is legal.
+
+        """
+        ...
+
+    def _legal_rook_move(self, piece: Rook, start: Square, end: Square) -> bool:
+        """Checks whether a rook move is legal.
+
+        Args:
+            piece (Rook): The rook to move.
+            start (Square): The square to move from.
+            end (Square): The square to move to.
+
+        Returns:
+            bool: Whether the move is legal.
+
+        """
+        ...
+
+    def _legal_king_move(self, piece: King, start: Square, end: Square) -> bool:
+        """Checks whether a king move is legal.
+
+        Args:
+            piece (King): The king to move.
+            start (Square): The square to move from.
+            end (Square): The square to move to.
+
+        Returns:
+            bool: Whether the move is legal.
+
+        """
+        ...
+
+    def _legal_queen_move(self, piece: Queen, start: Square, end: Square) -> bool:
+        """Checks whether a queen move is legal.
+
+        Args:
+            piece (Queen): The queen to move.
+            start (Square): The square to move from.
+            end (Square): The square to move to.
+
+        Returns:
+            bool: Whether the move is legal.
+
+        """
+        ...
+
+    def _king_checked(self, colour: Colour) -> bool:
         """Checks whether the king of a player is checked.
 
         Args:
-            turn (Colour): The colour of the pieces of the player making the move.
+            colour (Colour): The colour of the King.
 
         Returns:
             bool: Whether the king is checked.
 
         """
 
-        king_rank, king_file = self._find_king(turn)
+        king_rank, king_file = self._find_king(colour)
 
         for rank_, file_ in product(range(8), range(8)):
             piece = self.state[rank_][file_]
-            if piece and piece.colour != turn:
+            if piece and piece.colour != colour:
                 if (king_rank, king_file) in self._legal_move((rank_, file_)):
                     return True
 
         return False
 
-    def _short_castle(self, turn: Colour) -> bool:
+    def _short_castle(self, colour: Colour) -> bool:
         """Performs a short castle.
 
         Args:
-            turn (Colour): The colour of the pieces of the player making the move.
+            colour (Colour): The colour of the pieces to castle.
 
         Returns:
             bool: Whether the move was played. False if the move was illegal.
 
         """
 
-        rank = 0 if turn == Colour.WHITE else 7
+        rank = 0 if colour == Colour.WHITE else 7
 
         king = self.state[rank][4]
         rook = self.state[rank][7]
@@ -269,7 +339,7 @@ class Board:
 
             self.state[rank_][file_] = king
 
-            if self._king_checked(turn):
+            if self._king_checked(colour):
                 print("Invalid Move: Cannot castle through check.\n")
                 return False
 
@@ -293,8 +363,8 @@ class Board:
 
         rank = 0 if turn == Colour.WHITE else 7
 
-        king: King | None = self.state[rank][4]
-        rook: Rook | None = self.state[rank][0]
+        king = self.state[rank][4]
+        rook = self.state[rank][0]
         in_between_squares = [(rank, 2), (rank, 3)]
         check_for_pieces = in_between_squares + [(rank, 1)]
 
@@ -331,45 +401,55 @@ class Board:
 
         return True
 
-    def _find_king(self, turn: Colour) -> Square:
+    def _find_king(self, colour: Colour) -> Square:
         """Finds the position of the king of the player.
 
         Args:
-            turn (Colour): The colour of the pieces of the player making the move.
+            colour (Colour): The colour of the king to search for.
 
         Returns:
             Square: The coordinates of the king.
 
+        Raises:
+            ValueError: If the king was not found.
+
         """
 
-        rank, file = -1, -1
         for rank, file in product(range(8), range(8)):
             piece = self.state[rank][file]
-            if isinstance(piece, King) and piece.colour == turn:
+            if isinstance(piece, King) and piece.colour == colour:
                 return rank, file
 
-        return rank, file
+        raise ValueError("King not found.")
 
-    def _pawn_promotion(self, end: Square, turn: Colour) -> None:
-        """This function handles pawn promotion."""
-        rank, file = end
+    def _pawn_promotion(self, square: Square, colour: Colour) -> None:
+        """This function handles pawn promotion.
+        Updates the board inplace.
+
+        Args:
+            square (Square): pawn position
+            colour (Colour): The colour promoted piece.
+
+        """
+
+        rank, file = square
 
         while True:
-            option = PromotionOption(request_input("Pick a piece to promote to (q/r/b/n):"))
+            option = _PromotionOption(request_input("Pick a piece to promote to (q/r/b/n):"))
 
-            if option == PromotionOption.INVALID:
+            if option == _PromotionOption.INVALID:
                 print("Please select a valid promotion option.\n"
                       "Type 'help' for help message.")
                 continue
 
             # TODO: add a help message
-            if option == PromotionOption.HELP:
+            if option == _PromotionOption.HELP:
                 print("help message")
                 continue
 
             break
 
-        self.state[rank][file] = PromotionPiece[option.name].value(turn)
+        self.state[rank][file] = _PromotionPiece[option.name].value(colour)
 
     @staticmethod
     def _user_input_notation_to_coordinates(notation: str) -> tuple[Square, Square] | None:
