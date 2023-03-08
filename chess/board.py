@@ -116,8 +116,12 @@ class Board:
         if not res:
             return MoveOutcome.FAILURE
 
-        # check for checks and checkmates and stalemates
-        ...
+        if not self._has_legal_move(~turn):
+
+            if self._king_checked(~turn):
+                return MoveOutcome.CHECKMATE
+
+            return MoveOutcome.STALEMATE
 
         return MoveOutcome.SUCCESS
 

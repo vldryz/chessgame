@@ -14,5 +14,8 @@ class Colour(StrEnum):
     WHITE = "white"
     BLACK = "black"
 
+    def __invert__(self):
+        return Colour.BLACK if self == Colour.WHITE else Colour.WHITE
+
     def __str__(self) -> str:
         return self.value.title()
