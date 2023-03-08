@@ -3,14 +3,23 @@
 # Standard libraries
 from typing import Self
 from itertools import product
-from enum import StrEnum, Enum
+from enum import Flag, StrEnum, Enum, auto
 
 # Dependencies
-from chess.pieces import Pawn, King, Knight, Rook, Bishop, Queen, Square
-from chess.colour import Colour
+from chess.pieces import Pawn, King, Knight, Rook, Bishop, Queen
+from chess.colour_and_aliases import Colour, Square
 from chess.user_interaction import request_input
 
 # ———————————————————————————————————————————— Code ———————————————————————————————————————————— #
+
+
+class MoveOutcome(Flag):
+    """Flag enumerator class for move outcomes."""
+    SUCCESS = auto()
+    FAILURE = auto()
+    CHECKMATE = auto()
+    STALEMATE = auto()
+    GAME_OVER = CHECKMATE | STALEMATE
 
 
 class _MoveCommand(StrEnum):
@@ -79,39 +88,44 @@ class Board:
             ],
         ]
 
-    def make_move(self, raw_input: str, turn: Colour) -> bool:
-        """Makes a move on the board.
+    def make_move(self, raw_input: str, turn: Colour) -> MoveOutcome:
+        """Makes a move and processes the result.
 
         Args:
             raw_input (Square): The move to make.
             turn (Colour): The colour of the pieces of the player making the move.
 
         Returns:
-            bool: Whether the move was played. False otherwise.
+            MoveOutcome: The outcome of the move.
 
         """
 
-        if (move := _MoveCommand(raw_input)) == _MoveCommand.SHORT_CASTLE:
-            return self._short_castle(turn)
-
-        if move == _MoveCommand.LONG_CASTLE:
-            return self._short_castle(turn)
-
-        # unpacking with walrus operator is not supported
+        res = True
         if not (coordinates := self._user_input_notation_to_coordinates(raw_input)):
-            return False
+            res = False
 
-        start, end = coordinates
+        elif (move := _MoveCommand(raw_input)) == _MoveCommand.SHORT_CASTLE:
+            res = self._short_castle(turn)
 
-        if not self._move_piece(start, end, turn):
-            return False
+        elif move == _MoveCommand.LONG_CASTLE:
+            res = self._long_castle(turn)
 
-    def _move_piece(self, start: Square, end: Square, turn: Colour) -> bool:
-        """The function to process a move.
+        elif move == _MoveCommand.PIECE_MOVE:
+            res = self._move_piece(coordinates, turn)
+
+        if not res:
+            return MoveOutcome.FAILURE
+
+        # check for checks and checkmates and stalemates
+        ...
+
+        return MoveOutcome.SUCCESS
+
+    def _move_piece(self, coordinates: tuple[Square, Square], turn: Colour) -> bool:
+        """The function to move a piece.
 
         Args:
-            start (Square): The square to move from.
-            end (Square): The square to move to.
+            coordinates (tuple[Square, Square]): The coordinates of the move.
             turn (Colour): The colour of the pieces of the player making the move.
 
         Returns:
@@ -119,6 +133,7 @@ class Board:
 
         """
 
+        start, end = coordinates[0], coordinates[1]
         start_rank, start_file = start
         end_rank, end_file = end
 
