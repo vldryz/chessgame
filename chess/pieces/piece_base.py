@@ -16,7 +16,7 @@ class Piece(ABC):
         self.icon: str = icon
         self.moved: bool = False
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.icon
 
     # @abstractmethod
