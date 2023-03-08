@@ -6,8 +6,8 @@ from typing import Self
 from enum import StrEnum
 
 # Dependencies
-from chess.board import Board
-from chess.colour import Colour
+from chess.board import Board, MoveOutcome
+from chess.colour_and_aliases import Colour
 from chess.user_interaction import request_input
 
 # ———————————————————————————————————————————— Code ———————————————————————————————————————————— #
@@ -51,8 +51,11 @@ class Chess:
                 self._handle_game_command(command)
                 continue
 
-            if not self.board.make_move(raw_input, self.turn):
+            if (outcome := self.board.make_move(raw_input, self.turn)) == MoveOutcome.FAILURE:
                 continue
+
+            if outcome in MoveOutcome.GAME_OVER:
+                self._after_match()
 
             # End of turn actions
             self.move_number += 1
@@ -87,32 +90,34 @@ class Chess:
 
         elif command == _GameCommand.EXIT:
             print("Exiting game...")
-            sys.exit()
+            sys.exit(1)
 
     def _after_match(self) -> None:
         """Prompts the user end of the game options."""
-        print("Would you like to play again? [yes/no].\nFor other options, type 'help'.\n")
-        input_ = input().lower()
+        while True:
+            command = _GameCommand(request_input("Would you like to play again? [yes/no].\n"
+                                                 "For other options, type 'help'.\n"))
 
-        # use _request_input() and say that must be command since the game is over. suggest printing help message
+            if command == _GameCommand.YES:
+                Chess().play()
+                sys.exit(1)
 
-        if input_ == _GameCommand.YES.value:
-            Chess().play()
-            sys.exit()
+            elif command == _GameCommand.NO:
+                print("Exiting game...")
+                sys.exit(1)
 
-        elif input_ == _GameCommand.NO.value:
-            sys.exit()
+            elif command == _GameCommand.SAVE_MOVE_HISTORY:
+                self._save_move_history()
+                continue
 
-        elif input_ == _GameCommand.SAVE_MOVE_HISTORY.value:
-            self._save_move_history()
+            elif command == _GameCommand.HELP:
+                # TODO: Add help message
+                print("Help message")
+                continue
 
-        elif input_ == _GameCommand.HELP.value:
-            # TODO: Add help message
-            print("Help message")
-
-        else:
-            print("Invalid input.\n")
-            self._after_match()
+            else:
+                print("Invalid input.\n")
+                continue
 
     def _save_move_history(self, file_name: str = "move_history.txt") -> None:
         """Saves the move history to a `.txt` file."""

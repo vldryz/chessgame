@@ -4,12 +4,9 @@
 from abc import ABC, abstractmethod
 
 # Dependencies
-from chess.colour import Colour
+from chess.colour_and_aliases import Colour, Square
 
 # ———————————————————————————————————————————— Code ———————————————————————————————————————————— #
-
-
-Square = tuple[int, int]
 
 
 class Piece(ABC):

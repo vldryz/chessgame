@@ -4,8 +4,8 @@
 from itertools import product
 
 # Dependencies
-from chess.pieces.piece_base import Piece, Square
-from chess.colour import Colour
+from chess.pieces.piece_base import Piece
+from chess.colour_and_aliases import Colour, Square
 
 # ———————————————————————————————————————————— Code ———————————————————————————————————————————— #
 
