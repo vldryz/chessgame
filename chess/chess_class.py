@@ -46,7 +46,7 @@ class Chess:
 
         while True:
             raw_input = request_input(
-                f"{self.turn.value} to move on move {self.move_number}.\n"
+                f"{self.turn} to move on move {self.move_number}.\n"
                 f"Enter your move: "
             )
 

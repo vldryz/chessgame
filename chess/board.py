@@ -233,7 +233,6 @@ class Board:
         it will put the king of the player making the move in check.
 
         Args:
-            piece (Pawn): The pawn to move.
             start (Square): The square to move from.
             end (Square): The square to move to.
 
@@ -271,7 +270,6 @@ class Board:
         it will put the king of the player making the move in check.
 
         Args:
-            piece (Knight): The knight to move.
             start (Square): The square to move from.
             end (Square): The square to move to.
 
@@ -286,7 +284,6 @@ class Board:
         it will put the king of the player making the move in check.
 
         Args:
-            piece (Bishop): The bishop to move.
             start (Square): The square to move from.
             end (Square): The square to move to.
 
@@ -301,7 +298,6 @@ class Board:
         it will put the king of the player making the move in check.
 
         Args:
-            piece (Rook): The rook to move.
             start (Square): The square to move from.
             end (Square): The square to move to.
 
@@ -316,7 +312,6 @@ class Board:
         it will put the king of the player making the move in check.
 
         Args:
-            piece (King): The king to move.
             start (Square): The square to move from.
             end (Square): The square to move to.
 
@@ -331,7 +326,6 @@ class Board:
         it will put the king of the player making the move in check.
 
         Args:
-            piece (Queen): The queen to move.
             start (Square): The square to move from.
             end (Square): The square to move to.
 
@@ -563,23 +557,21 @@ class Board:
 
         """
 
+        rank, file = square
         files = ["a", "b", "c", "d", "e", "f", "g", "h"]
-        return files[square[1]] + str(square[0] + 1)
+        return files[file] + str(rank + 1)
 
     def __str__(self) -> str:
         return (
             (
-                (
-                    "\n"
-                    + "\n".join(
-                        "".join(f"{piece} " if piece else ". " for piece in row)
-                        + " "
-                        + str(8 - col)
-                        for col, row in enumerate(self.state[::-1])
-                    )
+                "\n".join(
+                    "  ".join(str(piece) if piece else "." for piece in row)
+                    + "    "
+                    + str(8 - col)
+                    for col, row in enumerate(self.state[::-1])
                 )
-                + "\n\n"
             )
-            + " ".join(["a", "b", "c", "d", "e", "f", "g", "h"])
+            + "\n\n"
+            + "  ".join(["a", "b", "c", "d", "e", "f", "g", "h"])
             + "\n"
         )
