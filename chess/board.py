@@ -17,9 +17,13 @@ class MoveOutcome(Flag):
     """Flag enumerator class for move outcomes."""
     SUCCESS = auto()
     FAILURE = auto()
+    CHECK = auto()
     CHECKMATE = auto()
     STALEMATE = auto()
     GAME_OVER = CHECKMATE | STALEMATE
+
+    def __str__(self) -> str:
+        return self.name.lower().replace("_", " ")
 
 
 class _MoveCommand(StrEnum):
@@ -37,10 +41,10 @@ class _PromotionOption(StrEnum):
     """Enum class for promotion options."""
     QUEEN = "q"
     ROOK = "r"
-    KNIGHT = "k"
+    KNIGHT = "n"
     BISHOP = "b"
     HELP = "help"
-    INVALID = "INVALID"  # Default value for invalid commands
+    INVALID = "invalid"  # Default value for invalid commands
 
     @classmethod
     def _missing_(cls, value: str) -> Self:
@@ -100,30 +104,23 @@ class Board:
 
         """
 
-        res = True
-        if not (coordinates := self._user_input_notation_to_coordinates(raw_input)):
-            res = False
-
-        elif (move := _MoveCommand(raw_input)) == _MoveCommand.SHORT_CASTLE:
+        res = False
+        if (move := _MoveCommand(raw_input)) == _MoveCommand.SHORT_CASTLE:
             res = self._short_castle(turn)
 
         elif move == _MoveCommand.LONG_CASTLE:
             res = self._long_castle(turn)
 
-        elif move == _MoveCommand.PIECE_MOVE:
+        elif coordinates := self._user_input_notation_to_coordinates(raw_input):
             res = self._move_piece(coordinates, turn)
 
         if not res:
             return MoveOutcome.FAILURE
 
-        if not self._has_legal_move(~turn):
+        if self._has_legal_move(~turn):
+            return MoveOutcome.CHECK if self._king_checked(~turn) else MoveOutcome.SUCCESS
 
-            if self._king_checked(~turn):
-                return MoveOutcome.CHECKMATE
-
-            return MoveOutcome.STALEMATE
-
-        return MoveOutcome.SUCCESS
+        return MoveOutcome.CHECKMATE if self._king_checked(~turn) else MoveOutcome.STALEMATE
 
     def _move_piece(self, coordinates: tuple[Square, Square], turn: Colour) -> bool:
         """The function to move a piece.
@@ -143,7 +140,7 @@ class Board:
 
         piece = self.state[start_rank][start_file]
         if not piece:
-            print(f"Invalid Move: There is no piece at {self._square_coordinates_to_notation(start)}.\n")
+            print(f"Invalid Move: There is no piece at {self._square_to_notation(start)}.\n")
             return False
 
         if piece.colour != turn:
@@ -151,20 +148,22 @@ class Board:
             return False
 
         if not self._legal_move(start, end):
-            print(f"Invalid Move: {piece} cannot move to {self._square_coordinates_to_notation(end)}.\n")
+            print(f"Invalid Move: {piece} cannot move to {self._square_to_notation(end)}.\n")
             return False
 
-        self.state[end_rank][end_file] = piece
-        self.state[start_rank][start_file] = None
+        self.state[start_rank][start_file], self.state[end_rank][end_file] = None, piece
         piece.moved = True
 
         if isinstance(piece, Pawn) and end_rank == 7 if turn == Colour.WHITE else 0:
-            self._pawn_promotion(end, turn)
+            option = self._request_pawn_promotion_option()
+            self.state[end_rank][end_file] = _PromotionPiece[option.name].value(turn)
 
         return True
 
     def _legal_move(self, start: Square, end: Square) -> bool:
         """Checks whether a move is legal.
+        A move is considered legal is a piece make move from start
+        square to end square and the move does not put the king in check.
 
         Args:
             start (Square): The square to move from.
@@ -175,27 +174,63 @@ class Board:
 
         """
 
-        piece = self.state[start[0]][start[1]]
+        start_rank, start_file = start
+        end_rank, end_file = end
+        piece = self.state[start_rank][start_file]
+
+        if not self._possible_move(start, end):
+            return False
+
+        self.state[start_rank][start_file], self.state[end_rank][end_file] = None, piece
+
+        if self._king_checked(piece.colour):
+            self.state[start_rank][start_file], self.state[end_rank][end_file] = piece, None
+            return False
+
+        self.state[start_rank][start_file], self.state[end_rank][end_file] = piece, None
+
+        return True
+
+    def _has_legal_move(self, turn: Colour) -> bool:
+        """Checks whether a player has any legal moves."""
+        ...
+
+    def _possible_move(self, start: Square, end: Square) -> bool:
+        """Checks whether a move is possible, regardless of whether
+        it will put the king of the player making the move in check.
+
+        Args:
+            start (Square): The square to move from.
+            end (Square): The square to move to.
+
+        Returns:
+            bool: Whether the move is possible.
+
+        """
+
+        start_rank, start_file = start
+        piece = self.state[start_rank][start_file]
 
         if isinstance(piece, Pawn):
-            return self._legal_pawn_move(piece, start, end)
+            return self._possible_pawn_move(start, end)
 
         if isinstance(piece, Knight):
-            return self._legal_knight_move(piece, start, end)
+            return self._possible_knight_move(start, end)
 
         if isinstance(piece, Bishop):
-            return self._legal_bishop_move(piece, start, end)
+            return self._possible_bishop_move(start, end)
 
         if isinstance(piece, Rook):
-            return self._legal_rook_move(piece, start, end)
+            return self._possible_rook_move(start, end)
 
         if isinstance(piece, King):
-            return self._legal_king_move(piece, start, end)
+            return self._possible_king_move(start, end)
 
-        return self._legal_queen_move(piece, start, end)
+        return self._possible_queen_move(start, end)
 
-    def _legal_pawn_move(self, piece: Pawn, start: Square, end: Square) -> bool:
-        """Checks whether a pawn move is legal.
+    def _possible_pawn_move(self, start: Square, end: Square) -> bool:
+        """Checks whether a pawn move is possible, regardless of whether
+        it will put the king of the player making the move in check.
 
         Args:
             piece (Pawn): The pawn to move.
@@ -203,15 +238,16 @@ class Board:
             end (Square): The square to move to.
 
         Returns:
-            bool: Whether the move is legal.
+            bool: Whether the move is possible.
 
         """
 
-        if end not in piece.possible_moves(start):
-            return False
-
         start_rank, start_file = start
         end_rank, end_file = end
+        piece = self.state[start_rank][start_file]
+
+        if end not in piece.possible_moves(start):
+            return False
 
         diff = 1 if piece.colour == Colour.WHITE else -1
 
@@ -230,8 +266,9 @@ class Board:
 
         return False
 
-    def _legal_knight_move(self, piece: Knight, start: Square, end: Square) -> bool:
-        """Checks whether a knight move is legal.
+    def _possible_knight_move(self, start: Square, end: Square) -> bool:
+        """Checks whether a knight move is possible, regardless of whether
+        it will put the king of the player making the move in check.
 
         Args:
             piece (Knight): The knight to move.
@@ -239,13 +276,14 @@ class Board:
             end (Square): The square to move to.
 
         Returns:
-            bool: Whether the move is legal.
+            bool: Whether the move is possible.
 
         """
         ...
 
-    def _legal_bishop_move(self, piece: Bishop, start: Square, end: Square) -> bool:
-        """Checks whether a bishop move is legal.
+    def _possible_bishop_move(self, start: Square, end: Square) -> bool:
+        """Checks whether a bishop move is possible, regardless of whether
+        it will put the king of the player making the move in check.
 
         Args:
             piece (Bishop): The bishop to move.
@@ -253,13 +291,14 @@ class Board:
             end (Square): The square to move to.
 
         Returns:
-            bool: Whether the move is legal.
+            bool: Whether the move is possible.
 
         """
         ...
 
-    def _legal_rook_move(self, piece: Rook, start: Square, end: Square) -> bool:
-        """Checks whether a rook move is legal.
+    def _possible_rook_move(self, start: Square, end: Square) -> bool:
+        """Checks whether a rook move is possible, regardless of whether
+        it will put the king of the player making the move in check.
 
         Args:
             piece (Rook): The rook to move.
@@ -267,13 +306,14 @@ class Board:
             end (Square): The square to move to.
 
         Returns:
-            bool: Whether the move is legal.
+            bool: Whether the move is possible.
 
         """
         ...
 
-    def _legal_king_move(self, piece: King, start: Square, end: Square) -> bool:
-        """Checks whether a king move is legal.
+    def _possible_king_move(self, start: Square, end: Square) -> bool:
+        """Checks whether a king move is possible, regardless of whether
+        it will put the king of the player making the move in check.
 
         Args:
             piece (King): The king to move.
@@ -281,13 +321,14 @@ class Board:
             end (Square): The square to move to.
 
         Returns:
-            bool: Whether the move is legal.
+            bool: Whether the move is possible.
 
         """
         ...
 
-    def _legal_queen_move(self, piece: Queen, start: Square, end: Square) -> bool:
-        """Checks whether a queen move is legal.
+    def _possible_queen_move(self, start: Square, end: Square) -> bool:
+        """Checks whether a queen move is possible, regardless of whether
+        it will put the king of the player making the move in check.
 
         Args:
             piece (Queen): The queen to move.
@@ -295,7 +336,7 @@ class Board:
             end (Square): The square to move to.
 
         Returns:
-            bool: Whether the move is legal.
+            bool: Whether the move is possible.
 
         """
         ...
@@ -311,13 +352,15 @@ class Board:
 
         """
 
-        king_rank, king_file = self._find_king(colour)
+        king_coordinates = self._find_king(colour)
 
         for rank_, file_ in product(range(8), range(8)):
-            piece = self.state[rank_][file_]
-            if piece and piece.colour != colour:
-                if (king_rank, king_file) in self._legal_move((rank_, file_)):
-                    return True
+            if (
+                (piece := self.state[rank_][file_])
+                and piece.colour != colour
+                and self._possible_move((rank_, file_), king_coordinates)
+            ):
+                return True
 
         return False
 
@@ -434,27 +477,24 @@ class Board:
 
         """
 
-        for rank, file in product(range(8), range(8)):
-            piece = self.state[rank][file]
+        for rank_, file_ in product(range(8), range(8)):
+            piece = self.state[rank_][file_]
             if isinstance(piece, King) and piece.colour == colour:
-                return rank, file
+                return rank_, file_
 
         raise ValueError("King not found.")
 
-    def _pawn_promotion(self, square: Square, colour: Colour) -> None:
-        """This function handles pawn promotion.
-        Updates the board inplace.
+    @staticmethod
+    def _request_pawn_promotion_option() -> _PromotionOption:
+        """Requests the user to select a promotion option.
 
-        Args:
-            square (Square): pawn position
-            colour (Colour): The colour promoted piece.
+        Returns:
+            _PromotionOption: The option selected by the user.
 
         """
 
-        rank, file = square
-
         while True:
-            option = _PromotionOption(request_input("Pick a piece to promote to (q/r/b/n):"))
+            option = _PromotionOption(request_input("Pick a piece to promote to (Q/R/B/N):"))
 
             if option == _PromotionOption.INVALID:
                 print("Please select a valid promotion option.\n"
@@ -466,9 +506,7 @@ class Board:
                 print("help message")
                 continue
 
-            break
-
-        self.state[rank][file] = _PromotionPiece[option.name].value(colour)
+            return option
 
     @staticmethod
     def _user_input_notation_to_coordinates(notation: str) -> tuple[Square, Square] | None:
@@ -514,7 +552,7 @@ class Board:
         )
 
     @staticmethod
-    def _square_coordinates_to_notation(square: Square) -> str:
+    def _square_to_notation(square: Square) -> str:
         """Converts a square's coordinates to chess notation.
 
         Args:
@@ -528,7 +566,7 @@ class Board:
         files = ["a", "b", "c", "d", "e", "f", "g", "h"]
         return files[square[1]] + str(square[0] + 1)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return (
             (
                 (

@@ -15,6 +15,7 @@ from chess.user_interaction import request_input
 
 class _GameCommand(StrEnum):
     """Enum class for commands."""
+
     YES = "yes"
     NO = "no"
     EXIT = "exit"
@@ -37,15 +38,17 @@ class Chess:
         self.board: Board = board or Board()
         self.turn: Colour = Colour.WHITE
         self.move_number: int = 1
-        self.move_history: list = []
+        self.move_history: list[str] = []
 
     def play(self):
         print("A game of chess begins.\n")
         print(self.board)
 
         while True:
-            raw_input = request_input(f"{self.turn.value} to move on move {self.move_number}.\n"
-                                      f"Enter your move: ")
+            raw_input = request_input(
+                f"{self.turn.value} to move on move {self.move_number}.\n"
+                f"Enter your move: "
+            )
 
             if (command := _GameCommand(raw_input)) != _GameCommand.MOVE:
                 self._handle_game_command(command)
@@ -54,12 +57,11 @@ class Chess:
             if (outcome := self.board.make_move(raw_input, self.turn)) == MoveOutcome.FAILURE:
                 continue
 
-            if outcome in MoveOutcome.GAME_OVER:
-                self._after_match()
+            self._handle_move_outcome(outcome)
 
             # End of turn actions
             self.move_number += 1
-            self.turn = Colour.WHITE if self.turn == Colour.BLACK else Colour.BLACK
+            self.turn = ~self.turn
 
             print(self.board)
 
@@ -70,8 +72,7 @@ class Chess:
             print("Help message")
 
         elif command == _GameCommand.RESIGN:
-            print(f"{self.turn.value} resigns. "
-                  f"{Colour.WHITE.value if self.turn == Colour.BLACK else Colour.BLACK.value} wins.")
+            print(f"{self.turn} resigned. {~self.turn} wins.")
             self._after_match()
 
         elif command == _GameCommand.DRAW:
@@ -80,7 +81,6 @@ class Chess:
 
         elif command == _GameCommand.RESET:
             Chess().play()
-            sys.exit()
 
         elif command == _GameCommand.SAVE_MOVE_HISTORY:
             self._save_move_history()
@@ -95,8 +95,12 @@ class Chess:
     def _after_match(self) -> None:
         """Prompts the user end of the game options."""
         while True:
-            command = _GameCommand(request_input("Would you like to play again? [yes/no].\n"
-                                                 "For other options, type 'help'.\n"))
+            command = _GameCommand(
+                request_input(
+                    "Would you like to play again? [yes/no].\n"
+                    "For other options, type 'help'.\n"
+                )
+            )
 
             if command == _GameCommand.YES:
                 Chess().play()
@@ -118,6 +122,25 @@ class Chess:
             else:
                 print("Invalid input.\n")
                 continue
+
+    def _handle_move_outcome(self, outcome: MoveOutcome) -> None:
+        """Handles the outcome of a move.
+
+        Args:
+            outcome (MoveOutcome): The outcome of the move.
+
+        """
+
+        if outcome in MoveOutcome.GAME_OVER:
+            print(f"The game has ended in a {outcome}.")
+
+            if outcome == MoveOutcome.CHECKMATE:
+                print(f"{~self.turn}'s King got checkmated. {self.turn} wins.")
+
+            self._after_match()
+
+        if outcome == MoveOutcome.CHECK:
+            print(f"{~self.turn}'s King is in check.")
 
     def _save_move_history(self, file_name: str = "move_history.txt") -> None:
         """Saves the move history to a `.txt` file."""
