@@ -12,4 +12,4 @@ def request_input(prompt: str = "") -> str:
 
     """
 
-    return input(prompt).lower()
+    return input(prompt).lower().strip()
