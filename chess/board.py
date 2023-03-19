@@ -636,20 +636,18 @@ class Board:
         file_start, file_end = notation[0], notation[2]
         rank_start, rank_end = notation[1], notation[3]
 
-        # Check if the start and end ranks are valid
+        # Check if the start and end files are valid
         if not {file_start, file_end}.issubset(set(files)):
             print("Invalid Move: File selection is invalid.\n"
                   "Type 'help' for help message.", end="\n\n")
             return None
 
-        # Check if the start and end files are valid
-        if not all(
-            rank.isdigit() or int(rank) not in range(1, 9)
-            for rank in {rank_start, rank_end}
-        ):
-            print("Invalid Move: Rank selection is invalid.\n"
-                  "Type 'help' for help message.", end="\n\n")
-            return None
+        # Check if the start and end ranks are valid
+        for rank in {rank_start, rank_end}:
+            if not rank.isdigit() or int(rank) not in range(1, 9):
+                print("Invalid Move: Rank selection is invalid.\n"
+                      "Type 'help' for help message.", end="\n\n")
+                return None
 
         return (
             (int(rank_start) - 1, files.index(file_start)),
