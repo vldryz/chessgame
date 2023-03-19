@@ -60,7 +60,7 @@ class Chess:
             self._handle_move_outcome(outcome)
 
             # End of turn actions
-            self.move_number += 1
+            self.move_number += 1 if self.turn == Colour.BLACK else 0
             self.turn = ~self.turn
 
             print(self.board)
