@@ -406,8 +406,8 @@ class Board:
         if end not in piece.moves_to_consider(start):
             return False
 
-        rank_direction = 1 if start_rank < end_rank else -1 if start_file != end_file else 0
-        file_direction = 1 if start_file < end_file else -1 if start_rank != end_rank else 0
+        rank_direction = 1 if start_rank < end_rank else 0 if start_rank == end_rank else -1
+        file_direction = 1 if start_file < end_file else 0 if start_file == end_file else -1
 
         if any(
             self.state[start_rank + diff * rank_direction][start_file + diff * file_direction]
