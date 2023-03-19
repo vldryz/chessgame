@@ -90,7 +90,7 @@ class Chess:
 
         elif command == _GameCommand.EXIT:
             print("Exiting game...")
-            sys.exit(1)
+            sys.exit(0)
 
     def _after_match(self) -> None:
         """Prompts the user end of the game options."""
@@ -104,11 +104,11 @@ class Chess:
 
             if command == _GameCommand.YES:
                 Chess().play()
-                sys.exit(1)
+                sys.exit(0)
 
             elif command == _GameCommand.NO:
                 print("Exiting game...")
-                sys.exit(1)
+                sys.exit(0)
 
             elif command == _GameCommand.SAVE_MOVE_HISTORY:
                 self._save_move_history()
@@ -135,12 +135,12 @@ class Chess:
             print(f"The game has ended in a {outcome}.")
 
             if outcome == MoveOutcome.CHECKMATE:
-                print(f"{~self.turn}'s King got checkmated. {self.turn} wins.")
+                print(f"{~self.turn}'s King got checkmated. {self.turn} wins.", end="\n\n")
 
             self._after_match()
 
         if outcome == MoveOutcome.CHECK:
-            print(f"{~self.turn}'s King is in check.")
+            print(f"{~self.turn}'s King is in check.", end="\n\n")
 
     def _save_move_history(self, file_name: str = "move_history.txt") -> None:
         """Saves the move history to a `.txt` file."""
