@@ -19,34 +19,15 @@ class Piece(ABC):
     def __str__(self) -> str:
         return self.icon
 
-    # @abstractmethod
-    # def legal_moves(self, start) -> list[Square]:
-    #     """The method to get a list of legal moves for a piece.
-    #
-    #     Legal moves are defined as a subset of available moves
-    #     that do not put the king in check.
-    #
-    #     Note:
-    #         Checking for an ability to castle is not necessary,
-    #         as the ability to castle implies that a king and a rook
-    #         have legal moves.
-    #
-    #     Args:
-    #         start (Square): The starting position of the piece.
-    #         board (Board): The board on which the piece is located.
-    #
-    #     Returns:
-    #         list[Square]: A list of legal moves for the piece.
-    #
-    #     """
-    #
-    #     raise NotImplementedError()
+    @property
+    def name(self) -> str:
+        return self.__class__.__name__
 
     @abstractmethod
-    def possible_moves(self, start: Square) -> list[Square]:
-        """The method to get a list of available moves for a piece.
+    def moves_to_consider(self, start: Square) -> list[Square]:
+        """The method to get a list of moves to consider for a piece.
 
-        Possible moves are defined as moves to which a piece can
+        Moves to consider are defined as moves to which a piece can
         technically move, given the starting position, regardless
         of the position of other pieces.
 
@@ -54,7 +35,7 @@ class Piece(ABC):
             start (Square): The starting position of the piece.
 
         Returns:
-            list[Square]: A list of available moves for the piece.
+            list[Square]: A list of moves to consider for the piece.
 
         """
 
