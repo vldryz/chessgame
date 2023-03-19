@@ -220,10 +220,22 @@ class Board:
         if not self._possible_move(start, end):
             return False
 
+        # save the state of the board
         end_square = self.state[end_rank][end_file]
+        en_passant_square = self.state[start_rank][end_file]
+
+        # play the move
+        if isinstance(piece, Pawn) and abs(start_file - end_file) == 1 and not self.state[end_rank][end_file]:
+            self.state[start_rank][end_file] = None
+
         self.state[start_rank][start_file], self.state[end_rank][end_file] = None, piece
+
+        # check if the king is in check
         res = not self._king_checked(piece.colour)
+
+        # undo the move
         self.state[start_rank][start_file], self.state[end_rank][end_file] = piece, end_square
+        self.state[start_rank][end_file] = en_passant_square
 
         return res
 
