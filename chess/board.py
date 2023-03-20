@@ -333,7 +333,7 @@ class Board:
         # Going diagonally to capture en passant
         return (
             self.en_passant_pawn
-            and self.state[start_rank][end_file] == self.en_passant_pawn
+            and self.state[start_rank][end_file] is self.en_passant_pawn
             and self.en_passant_pawn.colour != piece.colour
         )
 
@@ -681,6 +681,12 @@ class Board:
         rank, file = square
         files = ["a", "b", "c", "d", "e", "f", "g", "h"]
         return files[file] + str(rank + 1)
+
+    def __eq__(self, other: Self) -> bool:
+        return (
+            self.state == other.state
+            and self.en_passant_pawn == other.en_passant_pawn
+        )
 
     def __str__(self) -> str:
         return (
