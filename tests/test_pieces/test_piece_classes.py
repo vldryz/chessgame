@@ -1,4 +1,4 @@
-"""This module provides classes for chess pieces."""
+"""This module provides tests for chess pieces."""
 # ——————————————————————————————————————————— Imports ——————————————————————————————————————————— #
 # 3rd party libraries
 import pytest
