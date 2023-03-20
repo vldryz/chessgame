@@ -1,6 +1,7 @@
 """This module provides a base abstract class for chess pieces."""
 # ——————————————————————————————————————————— Imports ——————————————————————————————————————————— #
 # Standard libraries
+from typing import Self
 from abc import ABC, abstractmethod
 
 # Dependencies
@@ -11,6 +12,7 @@ from chess.colour_and_aliases import Colour, Square
 
 class Piece(ABC):
     """Base class for chess pieces."""
+
     def __init__(self, colour, icon):
         self.colour: Colour = colour
         self.icon: str = icon
@@ -22,6 +24,13 @@ class Piece(ABC):
     @property
     def name(self) -> str:
         return self.__class__.__name__
+
+    def __eq__(self, other: Self) -> bool:
+        return (
+            self.colour == other.colour
+            and self.name == other.name
+            and self.moved == other.moved
+        )
 
     @abstractmethod
     def moves_to_consider(self, start: Square) -> list[Square]:
