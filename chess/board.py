@@ -180,7 +180,6 @@ class Board:
             return False
 
         self.state[start_rank][start_file], self.state[end_rank][end_file] = None, piece
-        self.en_passant_pawn = None
         piece.moved = True
 
         if isinstance(piece, Pawn):
@@ -193,8 +192,10 @@ class Board:
                 self.en_passant_pawn = piece
 
             # Remove pawn that was captured en passant
-            elif abs(start_file - end_file) == 1 and not self.state[end_rank][end_file]:
+            elif abs(start_file - end_file) == 1 and self.state[start_rank][end_file] is self.en_passant_pawn:
                 self.state[start_rank][end_file] = None
+
+        self.en_passant_pawn = None
 
         return True
 
