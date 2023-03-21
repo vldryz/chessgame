@@ -92,7 +92,7 @@ def game_one() -> Chess:
     board.state[6][7].moved = True
 
     # on the last move Black played f7f5 with a pawn. It is available for en passant
-    board.en_passant = board.state[4][5]
+    board.en_passant_pawn = board.state[4][5]
 
     # Load the board into a Chess instance
     chess = Chess()
