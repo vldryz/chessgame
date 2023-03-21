@@ -447,7 +447,13 @@ class Board:
 
         """
 
-        return self._possible_bishop_move(start, end) or self._possible_rook_move(start, end)
+        start_rank, start_file = start
+        end_rank, end_file = end
+
+        if start_rank == end_rank or start_file == end_file:
+            return self._possible_rook_move(start, end)
+
+        return self._possible_bishop_move(start, end)
 
     def _king_checked(self, colour: Colour) -> bool:
         """Checks whether the king of a player is checked.
