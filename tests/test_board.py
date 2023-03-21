@@ -6,7 +6,6 @@ import pytest
 # Dependencies
 from chess import Chess
 from chess.board import Board, MoveOutcome, _PromotionOption
-from chess.pieces import Pawn, Knight, Bishop, Rook, Queen, King
 from chess.colour_and_aliases import Colour, Square
 
 # ———————————————————————————————————————————— Tests ———————————————————————————————————————————— #
@@ -32,11 +31,14 @@ class TestDefaultBoard:
             # invalid moves
             ("o-o", Colour.WHITE, MoveOutcome.FAILURE),
             ("o-o-o", Colour.WHITE, MoveOutcome.FAILURE),
-            ("a1a4", Colour.WHITE, MoveOutcome.FAILURE),
-            ("a1c3", Colour.WHITE, MoveOutcome.FAILURE),
             ("o-o", Colour.BLACK, MoveOutcome.FAILURE),
             ("o-o-o", Colour.BLACK, MoveOutcome.FAILURE),
+            ("a1a4", Colour.WHITE, MoveOutcome.FAILURE),
+            ("a1c3", Colour.WHITE, MoveOutcome.FAILURE),
+            ("e2e4", Colour.BLACK, MoveOutcome.SUCCESS),
+            ("b3b5", Colour.WHITE, MoveOutcome.FAILURE),
             ("", Colour.BLACK, MoveOutcome.FAILURE),
+            ("nonsense", Colour.WHITE, MoveOutcome.SUCCESS),
         ],
     )
     def test_make_move(self, raw_input: str, turn: Colour, expected: MoveOutcome):
@@ -365,3 +367,115 @@ class TestDefaultBoard:
     def test_square_to_notation(self, square: Square, expected: str):
         board = Board()
         assert board._square_to_notation(square) == expected
+
+
+class TestBoardOne:
+    """This class provides tests for the custom board position
+    `board_one` from `conftest.py`."""
+
+    @pytest.mark.parametrize(
+        "raw_input, turn, expected",
+        [
+            # valid moves
+            ("o-o", Colour.WHITE, MoveOutcome.SUCCESS),
+            ("o-o-o", Colour.BLACK, MoveOutcome.SUCCESS),
+            ("d5e6", Colour.WHITE, MoveOutcome.CHECK),
+            ("d5d7", Colour.WHITE, MoveOutcome.CHECK),
+            ("d5f7", Colour.WHITE, MoveOutcome.CHECK),
+            ("d5g8", Colour.WHITE, MoveOutcome.CHECK),
+            ("d5a8", Colour.WHITE, MoveOutcome.CHECK),
+            ("a8a1", Colour.BLACK, MoveOutcome.CHECK),
+            ("d5e5", Colour.WHITE, MoveOutcome.SUCCESS),
+            ("g8h7", Colour.BLACK, MoveOutcome.SUCCESS),
+
+            # invalid moves
+            ("o-o-o", Colour.WHITE, MoveOutcome.FAILURE),
+            ("o-o", Colour.BLACK, MoveOutcome.FAILURE),
+            ("e8f7", Colour.BLACK, MoveOutcome.FAILURE),  # will be under check
+            ("c2c3", Colour.WHITE, MoveOutcome.FAILURE),  # blocked by knight
+            ("c2c4", Colour.WHITE, MoveOutcome.FAILURE),  # blocked by knight
+            ("d7d5", Colour.BLACK, MoveOutcome.FAILURE),  # blocked by queen
+        ],
+    )
+    def test_make_move(self, game_one: Chess, raw_input: str, turn: Colour, expected: MoveOutcome):
+        board = game_one.board
+        assert board.make_move(raw_input, turn) == expected
+
+    def test_white_can_short_castle_but_cannot_long_castle(self, game_one: Chess):
+        """Test that white can short castle but cannot long castle;
+        the state of the board is updated correctly."""
+
+        board = game_one.board
+        assert board._long_castle(Colour.WHITE) is False
+        assert board._short_castle(Colour.WHITE) is True
+        assert board.state[0][4] is None
+        assert board.state[0][5] is not None
+        assert board.state[0][6] is not None
+        assert board.state[0][7] is None
+
+    def test_black_can_long_castle_but_cannot_short_castle(self, game_one: Chess):
+        """Test that black can long castle but cannot short castle;
+        the state of the board is updated correctly."""
+
+        board = game_one.board
+        assert board._short_castle(Colour.BLACK) is False
+        assert board._long_castle(Colour.BLACK) is True
+        assert board.state[7][0] is None
+        assert board.state[7][2] is not None
+        assert board.state[7][3] is not None
+        assert board.state[7][4] is None
+
+    def test_en_passant_capture(self, game_one: Chess):
+        """Test that a pawn can capture en passant;
+        the start square is empty;
+        the capturing pawn is moved to the target square;
+        the captured pawn is removed from the board;
+        the board is updated correctly."""
+
+        board = game_one.board
+        assert board.make_move("e5f6", Colour.WHITE) == MoveOutcome.SUCCESS
+        assert board.state[4][4] is None
+        assert board.state[5][5] is not None
+        assert board.state[4][5] is None
+        assert board.en_passant_pawn is None
+
+    def test_possible_move_is_not_necessarily_legal(self, game_one: Chess):
+        """Test that a possible move is not necessarily legal;
+        the board is not updated.
+
+        Black king could technically move to f7, but it would be under check."""
+
+        board = game_one.board
+        assert board._possible_move((7, 4), (6, 5)) is True
+        assert board._legal_move((7, 4), (6, 5)) is False
+
+
+class TestBoardTwo:
+    """This class provides tests for the custom board position
+    `board_two` from `conftest.py`."""
+
+    def test_capturing_king_raises_value_error(self, game_two: Chess):
+        """Test that capturing the king raises a ValueError.
+
+        Note: capturing the king must never be an option in the game.
+        If a player is in check and the game has not ended,
+        it is their move, and they can get out of check."""
+
+        board = game_two.board
+        with pytest.raises(ValueError):
+            board.make_move("g5f7", Colour.WHITE)
+
+    def test_attempting_to_capture_king_with_illegal_move_does_not_raise_value_error(self, game_two):
+        board = game_two.board
+        board.make_move("f7g8", Colour.BLACK)
+        assert board.make_move("c8g8", Colour.WHITE) == MoveOutcome.FAILURE
+
+    def test_checkmate_sequence_of_moves(self, game_two: Chess):
+        board = game_two.board
+
+        moves = ["f7g8", "a2a3", "f2h2"]
+        turns = [Colour.BLACK, Colour.WHITE, Colour.BLACK]
+        outcomes = [MoveOutcome.SUCCESS, MoveOutcome.SUCCESS, MoveOutcome.CHECKMATE]
+
+        for move, turn, outcome in zip(moves, turns, outcomes):
+            assert board.make_move(move, turn) == outcome
