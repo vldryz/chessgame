@@ -332,7 +332,7 @@ class Board:
 
         # Going diagonally to capture en passant
         return (
-            self.en_passant_pawn
+            self.en_passant_pawn is not None
             and self.state[start_rank][end_file] is self.en_passant_pawn
             and self.en_passant_pawn.colour != piece.colour
         )
