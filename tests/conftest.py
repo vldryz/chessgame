@@ -19,11 +19,11 @@ from chess.colour_and_aliases import Colour
 def game_one() -> Chess:
     """Pytest fixture for a custom board state.
 
-    ♖  .  .  .  ♔  .  ♗  .   8
-    .  .  .  ♙  .  .  .  ♟   7
+    ♖  .  .  .  ♔  .  ♗  .    8
+    .  .  .  ♙  .  .  .  ♟    7
     .  .  .  .  .  .  .  .    6
-    .  .  .  ♛  ♟  ♙  .  .   5
-    .  .  .  .  .  .   .  .    4
+    .  .  .  ♛  ♟  ♙  .  .    5
+    .  .  .  .  .  .  .  .    4
     .  .  ♞  .  .  .  .  .    3
     .  .  ♟  .  .  ♟  .  ♟    2
     .  .  .  .  ♚  .  .  ♜    1
@@ -108,14 +108,14 @@ def game_two() -> Chess:
 
     ♖  ♘  ♜  .  .  ♗  .  ♖    8
     .  ♙  .  .  .  ♔  ♙  ♙    7
-    ♙  .  .  .  .  ♘  .  .     6
-    .  .  .  .  ♙  .  ♞  .     5
-    .  .  .  .  ♟  .  ♟  .     4
-    .  .  .  .  .  .   ♙  .    3
-    ♟  ♟  ♟ .  ♝  ♕  .  ♟    2
-    ♜  ♞  ♝ ♛  .  ♜  .  ♚    1
+    ♙  .  .  .  .  ♘  .  .    6
+    .  .  .  .  ♙  .  ♞  .    5
+    .  .  .  .  ♟  .  ♟  .    4
+    .  .  .  .  .  .  ♙  .    3
+    ♟  ♟  ♟  .  ♝  ♕  .  ♟    2
+    ♜  ♞  ♝  ♛  .  ♜  .  ♚    1
 
-    a  b  c  d  e   f  g  h
+    a  b  c  d  e  f  g  h
 
     Used to test movement, checks, and checkmate.
 
