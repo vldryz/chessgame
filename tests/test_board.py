@@ -37,7 +37,7 @@ class TestDefaultBoard:
             ("o-o", Colour.BLACK, MoveOutcome.FAILURE),
             ("o-o-o", Colour.BLACK, MoveOutcome.FAILURE),
             ("", Colour.BLACK, MoveOutcome.FAILURE),
-        ]
+        ],
     )
     def test_make_move(self, raw_input: str, turn: Colour, expected: MoveOutcome):
         board = Board()
@@ -86,7 +86,7 @@ class TestDefaultBoard:
             ((7, 1), (6, 3), Colour.BLACK, False),
             ((7, 6), (7, 4), Colour.BLACK, False),
             ((7, 6), (6, 3), Colour.BLACK, False),
-        ]
+        ],
     )
     def test_move_piece(self, start: Square, end: Square, turn: Colour, expected: bool):
         """Test piece movement. Test that the state of the boards updates correctly"""
@@ -129,7 +129,7 @@ class TestDefaultBoard:
             ((1, 0), (4, 0), False),
             ((1, 0), (2, 1), False),
             ((1, 0), (7, 7), False),
-        ]
+        ],
     )
     def test_legal_move(self, start: Square, end: Square, expected: bool):
         """Test legal moves on move 1."""
@@ -166,7 +166,7 @@ class TestDefaultBoard:
             ((1, 0), (4, 0), False),
             ((1, 0), (2, 1), False),
             ((1, 0), (7, 7), False),
-        ]
+        ],
     )
     def test_possible_move(self, start: Square, end: Square, expected: bool):
         """Test possible moves on move 1.
@@ -202,7 +202,7 @@ class TestDefaultBoard:
             ((6, 0), (7, 7), False),
             ((6, 7), (0, 4), False),
             ((6, 7), (1, 3), False),
-        ]
+        ],
     )
     def test_pawn_possible_move(self, start: Square, end: Square, expected: bool):
         """Test Pawn possible moves on move 1."""
@@ -238,7 +238,7 @@ class TestDefaultBoard:
             ((7, 4), (6, 3), False),
             ((7, 4), (7, 3), False),
             ((7, 4), (6, 6), False),
-        ]
+        ],
     )
     def test_king_knight_possible_move(self, start: Square, end: Square, expected: bool):
         """Test King and Knight possible moves on move 1."""
@@ -257,7 +257,7 @@ class TestDefaultBoard:
             ((7, 2), (5, 2)),
             ((7, 5), (5, 3)),
             ((7, 5), (5, 5)),
-        ]
+        ],
     )
     def test_bishop_possible_move(self, start: Square, end: Square):
         """Test Bishop possible moves on move 1."""
@@ -276,7 +276,7 @@ class TestDefaultBoard:
             ((7, 0), (5, 2)),
             ((7, 7), (4, 7)),
             ((7, 7), (5, 5)),
-        ]
+        ],
     )
     def test_rook_possible_move(self, start: Square, end: Square):
         """Test Rook possible moves on move 1."""
