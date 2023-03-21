@@ -35,10 +35,10 @@ class TestDefaultBoard:
             ("o-o-o", Colour.BLACK, MoveOutcome.FAILURE),
             ("a1a4", Colour.WHITE, MoveOutcome.FAILURE),
             ("a1c3", Colour.WHITE, MoveOutcome.FAILURE),
-            ("e2e4", Colour.BLACK, MoveOutcome.SUCCESS),
+            ("e2e4", Colour.BLACK, MoveOutcome.FAILURE),
             ("b3b5", Colour.WHITE, MoveOutcome.FAILURE),
             ("", Colour.BLACK, MoveOutcome.FAILURE),
-            ("nonsense", Colour.WHITE, MoveOutcome.SUCCESS),
+            ("nonsense", Colour.WHITE, MoveOutcome.FAILURE),
         ],
     )
     def test_make_move(self, raw_input: str, turn: Colour, expected: MoveOutcome):
@@ -385,7 +385,7 @@ class TestBoardOne:
             ("d5g8", Colour.WHITE, MoveOutcome.CHECK),
             ("d5a8", Colour.WHITE, MoveOutcome.CHECK),
             ("a8a1", Colour.BLACK, MoveOutcome.CHECK),
-            ("d5e5", Colour.WHITE, MoveOutcome.SUCCESS),
+            ("d5e4", Colour.WHITE, MoveOutcome.SUCCESS),
             ("g8h7", Colour.BLACK, MoveOutcome.SUCCESS),
 
             # invalid moves
