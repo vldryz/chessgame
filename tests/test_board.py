@@ -6,7 +6,7 @@ from pytest import MonkeyPatch, CaptureFixture
 
 # Dependencies
 from chess import Chess
-from chess.board import Board, MoveOutcome, _PromotionOption
+from chess.board import Board, MoveOutcome, _PromotionOption, _PromotionPiece
 from chess.colour_and_aliases import Colour, Square
 
 # ———————————————————————————————————————————— Tests ———————————————————————————————————————————— #
@@ -481,6 +481,55 @@ class TestBoardOne:
         board = game_one.board
         assert board._possible_move((7, 4), (6, 5)) is True
         assert board._legal_move((7, 4), (6, 5)) is False
+
+    @pytest.mark.parametrize(
+        "end_square_raw, end_square, user_input",
+        [
+            ("g8", (7, 6), "q"),
+            ("g8", (7, 6), "r"),
+            ("g8", (7, 6), "b"),
+            ("g8", (7, 6), "n"),
+            ("h8", (7, 7), "q"),
+            ("h8", (7, 7), "r"),
+            ("h8", (7, 7), "b"),
+            ("h8", (7, 7), "n"),
+        ]
+    )
+    def test_pawn_promotion(
+        self,
+        game_one: Chess,
+        monkeypatch: MonkeyPatch,
+        capfd: CaptureFixture,
+        end_square_raw: str,
+        end_square: Square,
+        user_input: str,
+    ):
+        """Test that a pawn promotion is handled correctly;
+        the pawn is removed from the board;
+        the correct piece is placed on the board;
+        the black king is in check after h7g8 capture and promotion
+            to either a Queen or Rook."""
+
+        monkeypatch.setattr('builtins.input', lambda _: user_input)
+
+        board = game_one.board
+
+        assert board.make_move(f"h7{end_square_raw}", Colour.WHITE) in {MoveOutcome.SUCCESS, MoveOutcome.CHECK}
+        assert board.state[6][7] is None
+
+        end_rank, end_file = end_square
+        end_square_piece = board.state[end_rank][end_file]
+        expected_promotion_piece_class = _PromotionPiece[_PromotionOption(user_input).name].value
+
+        assert isinstance(end_square_piece, expected_promotion_piece_class)
+
+        if end_file == 6 and user_input in {"q", "r"}:
+            assert board._king_checked(Colour.BLACK)
+
+        else:
+            assert board._king_checked(Colour.BLACK) is False
+
+        capfd.readouterr()  # clear stdout
 
 
 class TestBoardTwo:
