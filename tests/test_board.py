@@ -2,6 +2,7 @@
 # ——————————————————————————————————————————— Imports ——————————————————————————————————————————— #
 # 3rd party libraries
 import pytest
+from pytest import MonkeyPatch
 
 # Dependencies
 from chess import Chess
@@ -323,7 +324,7 @@ class TestDefaultBoard:
         board = Board()
         assert board._find_king(colour) == expected
 
-    def test_request_pawn_promotion_options(self, monkeypatch):
+    def test_request_pawn_promotion_options(self, monkeypatch: MonkeyPatch):
 
         # mimic user inputs
         inputs = iter(["h", "p", "help", "q"])
