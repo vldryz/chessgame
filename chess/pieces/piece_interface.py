@@ -11,7 +11,7 @@ from chess.colour_and_aliases import Colour, Square
 
 
 class Piece(ABC):
-    """Base class for chess pieces."""
+    """Interface class for chess pieces."""
 
     def __init__(self, colour, icon):
         self.colour: Colour = colour
