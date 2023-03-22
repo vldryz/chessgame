@@ -72,8 +72,11 @@ class Board:
             the outcome of the move as a member of the MoveOutcome class.
 
     Glossary:
-        - Legal move is a move...
-        - Possible move is a move...
+        - Possible move is a move that is technically possible, meaning that
+            the piece can move to the target square, it is not blocked by
+            any other piece, the target square is not occupied by a piece of
+            the same colour.
+        - Legal move is a move that is possible and does not put the king in check.
 
     Notes:
         The only method that should be called from outside the class is make_move.
@@ -625,13 +628,23 @@ class Board:
             option = _PromotionOption(request_input("Pick a piece to promote to (Q/R/B/N): "))
 
             if option == _PromotionOption.INVALID:
-                print("Please select a valid promotion option.\n"
-                      "Type 'help' for help message.", end="\n\n")
+                print(
+                    "Please select a valid promotion option."
+                    "Type 'help' for help message.",
+                    sep="\n", end="\n\n"
+                )
                 continue
 
-            # TODO: add a help message
             if option == _PromotionOption.HELP:
-                print("help message")
+                print(
+                    "Promotion options:",
+                    "- 'Q': to promoted to a Queen.",
+                    "- 'R': to promoted to a Rook.",
+                    "- 'B': to promoted to a Bishop.",
+                    "- 'N': to promoted to a Knight.",
+                    sep="\n",
+                    end="\n\n"
+                )
                 continue
 
             return option
@@ -661,15 +674,21 @@ class Board:
 
         # Check if the start and end files are valid
         if not {file_start, file_end}.issubset(set(files)):
-            print("Invalid Move: File selection is invalid.\n"
-                  "Type 'help' for help message.", end="\n\n")
+            print(
+                "Invalid Move: File selection is invalid."
+                "Type 'help' for help message.",
+                sep="\n", end="\n\n"
+            )
             return None
 
         # Check if the start and end ranks are valid
         for rank in {rank_start, rank_end}:
             if not rank.isdigit() or int(rank) not in range(1, 9):
-                print("Invalid Move: Rank selection is invalid.\n"
-                      "Type 'help' for help message.", end="\n\n")
+                print(
+                    "Invalid Move: Rank selection is invalid."
+                    "Type 'help' for help message.",
+                    sep="\n", end="\n\n"
+                )
                 return None
 
         return (
