@@ -24,6 +24,7 @@ class _GameCommand(StrEnum):
     RESIGN = "resign"
     DRAW = "draw"
     PRINT_BOARD = "print board"
+    ABORT = "abort"
     HELP = "help"
     MOVE = "move"  # Default command to play a move
     LOAD = "load"  # Implement in the future
@@ -41,7 +42,7 @@ class Chess:
         self.move_history: list[str] = []
 
     def play(self):
-        print("A game of chess begins.\n")
+        print("A game of chess begins.", end="\n\n")
         print(self.board)
 
         while True:
@@ -57,6 +58,7 @@ class Chess:
             if (outcome := self.board.make_move(raw_input, self.turn)) == MoveOutcome.FAILURE:
                 continue
 
+            self.move_history.append(f"{self.move_number}. {raw_input}")
             self._handle_move_outcome(outcome)
 
             # End of turn actions
@@ -68,8 +70,20 @@ class Chess:
     def _handle_game_command(self, command: _GameCommand) -> None:
         """Handles a command input."""
         if command == _GameCommand.HELP:
-            # TODO: Add help message
-            print("Help message")
+            print(
+                "Input Options:",
+                "- a move in the format 'start_square + end_square', "
+                "e.g. 'e2e4' to move a piece.",
+                "- 'o-o' to short castle.",
+                "- 'o-o-o' to long castle.",
+                "- 'exit' to exit the game.",
+                "- 'reset' to start a new game.",
+                "- 'resign' to resign from the game.",
+                "- 'draw' to end the game in a draw.",
+                "- 'print board' to print the board.",
+                sep="\n",
+                end="\n\n",
+            )
 
         elif command == _GameCommand.RESIGN:
             print(f"{self.turn} resigned. {~self.turn} wins.")
@@ -81,9 +95,7 @@ class Chess:
 
         elif command == _GameCommand.RESET:
             Chess().play()
-
-        elif command == _GameCommand.SAVE_MOVE_HISTORY:
-            self._save_move_history()
+            sys.exit(1)
 
         elif command == _GameCommand.PRINT_BOARD:
             print(self.board)
@@ -92,19 +104,27 @@ class Chess:
             print("Exiting game...")
             sys.exit(0)
 
+        else:
+            print(
+                "Invalid input.",
+                "For a list of commands, type 'help'.",
+                sep="\n",
+                end="\n\n"
+            )
+
     def _after_match(self) -> None:
         """Prompts the user end of the game options."""
         while True:
             command = _GameCommand(
                 request_input(
                     "Would you like to play again? [yes/no].\n"
-                    "For other options, type 'help'.\n"
+                    "For other options, type 'help': "
                 )
             )
 
             if command == _GameCommand.YES:
                 Chess().play()
-                sys.exit(0)
+                sys.exit(1)
 
             elif command == _GameCommand.NO:
                 print("Exiting game...")
@@ -115,12 +135,21 @@ class Chess:
                 continue
 
             elif command == _GameCommand.HELP:
-                # TODO: Add help message
-                print("Help message")
+                print(
+                    "Input Options:",
+                    "- 'yes' to play again.",
+                    "- 'no' to exit the game.",
+                    "- 'save move history' to save the move history.",
+                    sep="\n", end="\n\n",
+                )
                 continue
 
             else:
-                print("Invalid input.\n")
+                print(
+                    "Invalid input."
+                    "For a list of commands, type 'help'.",
+                    sep="\n", end="\n\n"
+                )
                 continue
 
     def _handle_move_outcome(self, outcome: MoveOutcome) -> None:
@@ -142,9 +171,46 @@ class Chess:
         if outcome == MoveOutcome.CHECK:
             print(f"{~self.turn}'s King is in check.", end="\n\n")
 
-    def _save_move_history(self, file_name: str = "move_history.txt") -> None:
-        """Saves the move history to a `.txt` file."""
+    def _save_move_history(self) -> None:
+        """Saves the move history in a `.txt` file."""
+
+        if not self.move_history:
+            print("There is no move history to save.")
+            return
+
+        while True:
+            file_name = request_input("Enter the file name: ")
+
+            if file_name.endswith(".txt"):
+                break
+
+            if (command := _GameCommand(file_name)) == _GameCommand.HELP:
+                print(
+                    "Input Options:",
+                    "- a file name with the '.txt' extension.",
+                    "- 'abort' to abort the operation.",
+                    "- 'exit' to exit the game.",
+                    sep="\n", end="\n\n",
+                )
+                continue
+
+            elif command == _GameCommand.ABORT:
+                return
+
+            elif command == _GameCommand.EXIT:
+                print("Exiting game...")
+                sys.exit(0)
+
+            print(
+                "The file extension must be '.txt'.",
+                "For other options, type 'help'.",
+                sep="\n", end="\n\n",
+            )
+
+        grouped_list = [self.move_history[i: i + 2] for i in range(0, len(self.move_history), 2)]
+        formatted_moves = "\n".join("; ".join(pair) for pair in grouped_list)
+
         with open(file_name, "w") as file:
-            file.write(str(self.move_history))
+            file.write(formatted_moves)
 
         print(f"Move history saved in {file_name}.")
