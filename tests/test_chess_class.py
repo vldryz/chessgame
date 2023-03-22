@@ -20,7 +20,7 @@ class TestDefaultChess:
     """Test the default chess game."""
 
     def test_move_history_is_saved_to_file(
-        self, mocker: MockerFixture, monkeypatch: MonkeyPatch, capfd: CaptureFixture
+        self, mocker: MockerFixture, monkeypatch: MonkeyPatch, capfd: CaptureFixture,
     ):
         """Test that the move history is saved to a file when the user
          inputs 'save move history', and the file content after a match ends."""
@@ -49,7 +49,7 @@ class TestDefaultChess:
                 assert f.read() == "1. e2e4; 1. e7e5\n2. b1c3"
 
     def test_game_ended_in_checkmate_prompts_option_to_continue(
-        self, mocker: MockerFixture, monkeypatch: MonkeyPatch, capfd: CaptureFixture
+        self, mocker: MockerFixture, monkeypatch: MonkeyPatch, capfd: CaptureFixture,
     ):
 
         mocker.patch('chess.board.Board.make_move', return_value=MoveOutcome.CHECKMATE)
