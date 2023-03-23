@@ -15,18 +15,19 @@ git clone https://github.com/vldryz/chessgame.git
 
 ## How to play
 
-1. Execution. \
+1. **Execution** \
 Run `main.py` in terminal or an IDE of your choice. \
-    <img src="/img/board_default.jpeg" alt="Default Chess Board" width="400" />
-2. Piece movement. \
+   <img src="/img/board_default.jpeg" alt="Default Chess Board" width="400" />
+
+2. **Piece movement** \
 To move a piece enter \*start position\* + \*end position\*, e.g. 'e2e4' will move 
 the Pawn from e2 square to e4 square.\
-    <img src="/img/board_default.jpeg" alt="Chess Board after move e2e4" width="400" />
+   <img src="/img/board_default.jpeg" alt="Chess Board after move e2e4" width="400" />
 
-3. Castling. \
+3. **Castling** \
 To short castle or long castle enter 'o-o' or 'o-o-o', respectively.
 
-4. End of the game. \
+4. **End of the game** \
 The game ends automatically when a player gets checkmated or in a stalemate if a 
 player has no legal moves. Alternatively, a player can enter 'resign', 'draw', or 'exit'
 to end the game.
