@@ -1,2 +1,3 @@
-.venv_chess/
-.vscode
+/venv/
+.idea/
+*.pyc
