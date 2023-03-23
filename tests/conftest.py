@@ -7,7 +7,7 @@ from itertools import product
 import pytest
 
 # Dependencies
-from chess.chess_class import Chess
+from chess import Chess
 from chess.board import Board
 from chess.pieces import Pawn, Knight, Bishop, Rook, Queen, King
 from chess.colour_and_aliases import Colour
