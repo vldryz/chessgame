@@ -18,6 +18,8 @@ class MoveOutcome(Flag):
     SUCCESS = auto()
     FAILURE = auto()
     CHECK = auto()
+    CAPTURE = auto()
+    PAWN_MOVE = auto()
     CHECKMATE = auto()
     STALEMATE = auto()
     GAME_OVER = CHECKMATE | STALEMATE
@@ -712,10 +714,27 @@ class Board:
         files = ["a", "b", "c", "d", "e", "f", "g", "h"]
         return files[file] + str(rank + 1)
 
+    def _en_passant_pawn_location(self) -> Square | None:
+        """Finds the location of the self.en_passant_pawn,
+        if such pawn exists. None otherwise.
+
+        Returns:
+            Square | None: The coordinates of the pawn.
+                None if self.en_passant_pawn is None.
+
+        """
+
+        if self.en_passant_pawn is None:
+            return None
+
+        for rank_, file_ in product(range(8), range(8)):
+            if self.state[rank_][file_] is self.en_passant_pawn:
+                return rank_, file_
+
     def __eq__(self, other: Self) -> bool:
         return (
             self.state == other.state
-            and self.en_passant_pawn == other.en_passant_pawn
+            and self._en_passant_pawn_location() == other._en_passant_pawn_location()
         )
 
     def __str__(self) -> str:
