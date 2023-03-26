@@ -11,8 +11,6 @@ from chess.colour_and_aliases import Colour, Square
 
 
 class Pawn(Piece):
-    def __init__(self, colour: Colour):
-        super().__init__(colour, "♟" if colour == Colour.WHITE else "♙")
 
     def moves_to_consider(self, start: Square) -> list[Square]:
 
@@ -32,8 +30,6 @@ class Pawn(Piece):
 
 
 class King(Piece):
-    def __init__(self, colour: Colour):
-        super().__init__(colour, "♚" if colour == Colour.WHITE else "♔")
 
     def moves_to_consider(self, start: Square) -> list[Square]:
         moves = [
@@ -46,8 +42,6 @@ class King(Piece):
 
 
 class Knight(Piece):
-    def __init__(self, colour: Colour):
-        super().__init__(colour, "♞" if colour == Colour.WHITE else "♘")
 
     def moves_to_consider(self, start: Square) -> list[Square]:
         moves = [
@@ -60,8 +54,6 @@ class Knight(Piece):
 
 
 class Bishop(Piece):
-    def __init__(self, colour: Colour):
-        super().__init__(colour, "♝" if colour == Colour.WHITE else "♗")
 
     def moves_to_consider(self, start: Square) -> list[Square]:
         moves = [
@@ -74,8 +66,6 @@ class Bishop(Piece):
 
 
 class Rook(Piece):
-    def __init__(self, colour: Colour):
-        super().__init__(colour, "♜" if colour == Colour.WHITE else "♖")
 
     def moves_to_consider(self, start: Square) -> list[Square]:
         return [(start[0], file) for file in range(8) if file != start[1]] + [
@@ -84,8 +74,6 @@ class Rook(Piece):
 
 
 class Queen(Piece):
-    def __init__(self, colour: Colour):
-        super().__init__(colour, "♛" if colour == Colour.WHITE else "♕")
 
     def moves_to_consider(self, start: Square) -> list[Square]:
         moves = [

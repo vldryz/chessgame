@@ -1,8 +1,9 @@
-"""This module provides a base abstract class for chess pieces."""
+"""This module provides an interface for chess pieces."""
 # ——————————————————————————————————————————— Imports ——————————————————————————————————————————— #
 # Standard libraries
 from typing import Self
 from abc import ABC, abstractmethod
+from enum import StrEnum, property
 
 # Dependencies
 from chess.colour_and_aliases import Colour, Square
@@ -10,12 +11,44 @@ from chess.colour_and_aliases import Colour, Square
 # ———————————————————————————————————————————— Code ———————————————————————————————————————————— #
 
 
+class PieceIcon(StrEnum):
+    """Enum for piece icons."""
+
+    WHITE_PAWN = "♟"
+    WHITE_KNIGHT = "♞"
+    WHITE_BISHOP = "♝"
+    WHITE_ROOK = "♜"
+    WHITE_QUEEN = "♛"
+    WHITE_KING = "♚"
+    BLACK_PAWN = "♙"
+    BLACK_KNIGHT = "♘"
+    BLACK_BISHOP = "♗"
+    BLACK_ROOK = "♖"
+    BLACK_QUEEN = "♕"
+    BLACK_KING = "♔"
+
+    @classmethod
+    def get_icon(cls, colour: Colour, piece_name: str) -> Self:
+        """Get the icon of a piece.
+
+        Args:
+            colour (Colour): The colour of the piece.
+            piece_name (str): The name of the piece.
+
+        Returns:
+            Self: The corresponding member of the class.
+
+        """
+
+        return cls[f"{colour.upper()}_{piece_name.upper()}"]
+
+
 class Piece(ABC):
     """Interface class for chess pieces."""
 
-    def __init__(self, colour, icon):
+    def __init__(self, colour):
         self.colour: Colour = colour
-        self.icon: str = icon
+        self.icon: PieceIcon = PieceIcon.get_icon(colour, self.name)
         self.moved: bool = False
 
     def __str__(self) -> str:
