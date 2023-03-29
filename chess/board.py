@@ -15,13 +15,15 @@ from chess.user_interaction import request_input
 
 class MoveOutcome(Flag):
     """Flag enumerator class for move outcomes."""
-    SUCCESS = auto()
-    FAILURE = auto()
+    SUCCESS = auto()  # Default value for valid moves
+    FAILURE = auto()  # Default value for invalid commands and illegal moves
     CHECK = auto()
+    CASTLES = auto()
     CAPTURE = auto()
     PAWN_MOVE = auto()
     CHECKMATE = auto()
     STALEMATE = auto()
+    RESET_REPETITION_COUNTER = CASTLES | CAPTURE | PAWN_MOVE
     GAME_OVER = CHECKMATE | STALEMATE
 
     def __str__(self) -> str:
@@ -137,7 +139,7 @@ class Board:
 
         """
 
-        res = False
+        res = MoveOutcome.FAILURE
         if (move := _MoveCommand(raw_input)) == _MoveCommand.SHORT_CASTLE:
             res = self._short_castle(turn)
 
@@ -147,7 +149,7 @@ class Board:
         elif coordinates := self._user_input_notation_to_coordinates(raw_input):
             res = self._move_piece(coordinates, turn)
 
-        if not res:
+        if res == MoveOutcome.FAILURE:
             return MoveOutcome.FAILURE
 
         if self._has_legal_move(~turn):
@@ -155,7 +157,7 @@ class Board:
 
         return MoveOutcome.CHECKMATE if self._king_checked(~turn) else MoveOutcome.STALEMATE
 
-    def _move_piece(self, coordinates: tuple[Square, Square], turn: Colour) -> bool:
+    def _move_piece(self, coordinates: tuple[Square, Square], turn: Colour) -> MoveOutcome:
         """The function to move a piece.
 
         Args:
@@ -163,7 +165,14 @@ class Board:
             turn (Colour): The colour of the pieces of the player making the move.
 
         Returns:
-            bool: Whether the move was played. False otherwise.
+            MoveOutcome: The outcome of the move.
+                Mandatory flag (one of the following):
+                    - Success: The move was played.
+                    - Failure: The move was illegal.
+
+                Optional flags:
+                    - Capture: The move was a capture.
+                    - Pawn move: The move was a pawn move.
 
         """
 
@@ -174,15 +183,21 @@ class Board:
         piece = self.state[start_rank][start_file]
         if not piece:
             print(f"Invalid Move: There is no piece at {self._square_to_notation(start)}.", end="\n\n")
-            return False
+            return MoveOutcome.FAILURE
 
         if piece.colour != turn:
             print(f"Invalid Move: It is {turn}'s turn.", end="\n\n")
-            return False
+            return MoveOutcome.FAILURE
 
         if not self._legal_move(start, end):
             print(f"Invalid Move: {piece.name} cannot move to {self._square_to_notation(end)}.", end="\n\n")
-            return False
+            return MoveOutcome.FAILURE
+
+        res = MoveOutcome.SUCCESS
+
+        end_square = self.state[end_rank][end_file]
+        if end_square:
+            res |= MoveOutcome.CAPTURE
 
         self.state[start_rank][start_file], self.state[end_rank][end_file] = None, piece
 
@@ -192,12 +207,14 @@ class Board:
             and abs(start_file - end_file) == 1
             and self.state[start_rank][end_file] is self.en_passant_pawn
         ):
+            res |= MoveOutcome.CAPTURE
             self.state[start_rank][end_file] = None
 
         piece.moved = True
         self.en_passant_pawn = None
 
         if isinstance(piece, Pawn):
+            res |= MoveOutcome.PAWN_MOVE
 
             if end_rank == 7 if turn == Colour.WHITE else 0:
                 option = self._request_pawn_promotion_option()
@@ -206,7 +223,127 @@ class Board:
             elif abs(start_rank - end_rank) == 2:
                 self.en_passant_pawn = piece
 
-        return True
+        return res
+
+    def _short_castle(self, colour: Colour) -> MoveOutcome:
+        """Performs a short castle.
+
+        Args:
+            colour (Colour): The colour of the pieces to castle.
+
+        Returns:
+            MoveOutcome: The outcome of the move.
+                Mandatory flag (one combination of the following):
+                    - Success: The move was played.
+                    - Castles: The move was a castle.
+                or
+                    - Failure: The move was illegal.
+
+        """
+
+        rank = 0 if colour == Colour.WHITE else 7
+
+        king = self.state[rank][4]
+        rook = self.state[rank][7]
+        in_between_squares = [(rank, 5), (rank, 6)]
+
+        if (
+            not isinstance(king, King)
+            or not isinstance(rook, Rook)
+            or king.moved
+            or rook.moved
+        ):
+            print("Invalid Move: King or Rook has been moved.", end="\n\n")
+            return MoveOutcome.FAILURE
+
+        if self._king_checked(colour):
+            print("Invalid Move: Cannot castle under check.", end="\n\n")
+            return MoveOutcome.FAILURE
+
+        for rank_, file_ in in_between_squares:
+            if self.state[rank_][file_]:
+                print("Invalid Move: Cannot castle through another piece.", end="\n\n")
+                return MoveOutcome.FAILURE
+
+            self.state[rank_][file_] = king
+
+            if self._king_checked(colour):
+                print("Invalid Move: Cannot castle through check.", end="\n\n")
+                self.state[rank_][file_] = None
+                return MoveOutcome.FAILURE
+
+            self.state[rank_][file_] = None
+
+        self.state[rank][4] = None
+        self.state[rank][5] = rook
+        self.state[rank][6] = king
+        self.state[rank][7] = None
+
+        king.moved = True
+        rook.moved = True
+
+        return MoveOutcome.CASTLES | MoveOutcome.SUCCESS
+
+    def _long_castle(self, colour: Colour) -> MoveOutcome:
+        """Performs a long castle.
+
+        Args:
+            colour (Colour): The colour of the pieces of the player making the move.
+
+        Returns:
+            MoveOutcome: The outcome of the move.
+                Mandatory flag (one combination of the following):
+                    - Success: The move was played.
+                    - Castles: The move was a castle.
+                or
+                    - Failure: The move was illegal.
+
+        """
+
+        rank = 0 if colour == Colour.WHITE else 7
+
+        king = self.state[rank][4]
+        rook = self.state[rank][0]
+        in_between_squares = [(rank, 2), (rank, 3)]
+        check_for_pieces = in_between_squares + [(rank, 1)]
+
+        if (
+            not isinstance(king, King)
+            or not isinstance(rook, Rook)
+            or king.moved
+            or rook.moved
+        ):
+            print("Invalid Move: King or Rook has been moved.", end="\n\n")
+            return MoveOutcome.FAILURE
+
+        if self._king_checked(colour):
+            print("Invalid Move: Cannot castle under check.", end="\n\n")
+            return MoveOutcome.FAILURE
+
+        for rank_, file_ in check_for_pieces:
+            if self.state[rank_][file_]:
+                print("Invalid Move: Cannot castle through another piece.", end="\n\n")
+                return MoveOutcome.FAILURE
+
+        for rank_, file_ in in_between_squares:
+            self.state[rank_][file_] = king
+
+            if self._king_checked(colour):
+                print("Invalid Move: Cannot castle through check.", end="\n\n")
+                self.state[rank_][file_] = None
+                return MoveOutcome.FAILURE
+
+            self.state[rank_][file_] = None
+
+        self.state[rank][0] = None
+        self.state[rank][2] = king
+        self.state[rank][3] = rook
+        self.state[rank][4] = None
+
+        king.moved = True
+        rook.moved = True
+
+        return MoveOutcome.CASTLES | MoveOutcome.SUCCESS
 
     def _legal_move(self, start: Square, end: Square) -> bool:
         """Checks whether a move is legal.
@@ -491,116 +628,6 @@ class Board:
                 return True
 
         return False
-
-    def _short_castle(self, colour: Colour) -> bool:
-        """Performs a short castle.
-
-        Args:
-            colour (Colour): The colour of the pieces to castle.
-
-        Returns:
-            bool: Whether the move was played. False if the move was illegal.
-
-        """
-
-        rank = 0 if colour == Colour.WHITE else 7
-
-        king = self.state[rank][4]
-        rook = self.state[rank][7]
-        in_between_squares = [(rank, 5), (rank, 6)]
-
-        if (
-            not isinstance(king, King)
-            or not isinstance(rook, Rook)
-            or king.moved
-            or rook.moved
-        ):
-            print("Invalid Move: King or Rook has been moved.", end="\n\n")
-            return False
-
-        if self._king_checked(colour):
-            print("Invalid Move: Cannot castle under check.", end="\n\n")
-            return False
-
-        for rank_, file_ in in_between_squares:
-            if self.state[rank_][file_]:
-                print("Invalid Move: Cannot castle through another piece.", end="\n\n")
-                return False
-
-            self.state[rank_][file_] = king
-
-            if self._king_checked(colour):
-                print("Invalid Move: Cannot castle through check.", end="\n\n")
-                self.state[rank_][file_] = None
-                return False
-
-            self.state[rank_][file_] = None
-
-        self.state[rank][4] = None
-        self.state[rank][5] = rook
-        self.state[rank][6] = king
-        self.state[rank][7] = None
-
-        king.moved = True
-        rook.moved = True
-
-        return True
-
-    def _long_castle(self, colour: Colour) -> bool:
-        """Performs a long castle.
-
-        Args:
-            colour (Colour): The colour of the pieces of the player making the move.
-
-        Returns:
-            bool: Whether the move was played. False if the move was illegal.
-
-        """
-
-        rank = 0 if colour == Colour.WHITE else 7
-
-        king = self.state[rank][4]
-        rook = self.state[rank][0]
-        in_between_squares = [(rank, 2), (rank, 3)]
-        check_for_pieces = in_between_squares + [(rank, 1)]
-
-        if (
-            not isinstance(king, King)
-            or not isinstance(rook, Rook)
-            or king.moved
-            or rook.moved
-        ):
-            print("Invalid Move: King or Rook has been moved.", end="\n\n")
-            return False
-
-        if self._king_checked(colour):
-            print("Invalid Move: Cannot castle under check.", end="\n\n")
-            return False
-
-        for rank_, file_ in check_for_pieces:
-            if self.state[rank_][file_]:
-                print("Invalid Move: Cannot castle through another piece.", end="\n\n")
-                return False
-
-        for rank_, file_ in in_between_squares:
-            self.state[rank_][file_] = king
-
-            if self._king_checked(colour):
-                print("Invalid Move: Cannot castle through check.", end="\n\n")
-                self.state[rank_][file_] = None
-                return False
-
-            self.state[rank_][file_] = None
-
-        self.state[rank][0] = None
-        self.state[rank][2] = king
-        self.state[rank][3] = rook
-        self.state[rank][4] = None
-
-        king.moved = True
-        rook.moved = True
-
-        return True
 
     def _find_king(self, colour: Colour) -> Square:
         """Finds the position of the king of the player.
