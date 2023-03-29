@@ -541,6 +541,9 @@ class Board:
         self.state[rank][6] = king
         self.state[rank][7] = None
 
+        king.moved = True
+        rook.moved = True
+
         return True
 
     def _long_castle(self, colour: Colour) -> bool:
@@ -593,6 +596,9 @@ class Board:
         self.state[rank][2] = king
         self.state[rank][3] = rook
         self.state[rank][4] = None
+
+        king.moved = True
+        rook.moved = True
 
         return True
 
