@@ -23,8 +23,10 @@ class MoveOutcome(Flag):
     PAWN_MOVE = auto()
     CHECKMATE = auto()
     STALEMATE = auto()
-    RESET_REPETITION_COUNTER = CASTLES | CAPTURE | PAWN_MOVE
-    GAME_OVER = CHECKMATE | STALEMATE
+    MANDATORY_DRAW = auto()
+    RESET_FIFTY_MOVE_RULE_COUNTER = CAPTURE | PAWN_MOVE
+    RESET_REPETITION_COUNTER = RESET_FIFTY_MOVE_RULE_COUNTER | PAWN_MOVE
+    GAME_OVER = CHECKMATE | STALEMATE | MANDATORY_DRAW
 
     def __str__(self) -> str:
         return self.name.lower().replace("_", " ")
@@ -72,8 +74,9 @@ class Board:
         en_passant_pawn (Pawn | None): The pawn that can be captured en passant.
 
     Methods:
-        make_move(raw_input: str, turn: Colour): Performs a move and returns
-            the outcome of the move as a member of the MoveOutcome class.
+        make_move(raw_input: str, turn: Colour): Performs a move and
+            returns the outcome of the move as the corresponding flags
+            of the MoveOutcome class.
 
     Glossary:
         - Possible move is a move that is technically possible, meaning that
@@ -152,10 +155,16 @@ class Board:
         if res == MoveOutcome.FAILURE:
             return MoveOutcome.FAILURE
 
-        if self._has_legal_move(~turn):
-            return MoveOutcome.CHECK if self._king_checked(~turn) else MoveOutcome.SUCCESS
+        if self._mandatory_draw_conditions_met():
+            res |= MoveOutcome.MANDATORY_DRAW
 
-        return MoveOutcome.CHECKMATE if self._king_checked(~turn) else MoveOutcome.STALEMATE
+        if self._has_legal_move(~turn):
+            res |= MoveOutcome.CHECK if self._king_checked(~turn) else MoveOutcome.SUCCESS
+
+        else:
+            res |= MoveOutcome.CHECKMATE if self._king_checked(~turn) else MoveOutcome.STALEMATE
+
+        return res
 
     def _move_piece(self, coordinates: tuple[Square, Square], turn: Colour) -> MoveOutcome:
         """The function to move a piece.
@@ -763,6 +772,18 @@ class Board:
         for rank_, file_ in product(range(8), range(8)):
             if self.state[rank_][file_] is self.en_passant_pawn:
                 return rank_, file_
+
+    def _mandatory_draw_conditions_met(self) -> bool:
+        """Checks whether the mandatory draw conditions are met.
+        That is, if the board contains insufficient material to continue.
+
+        Returns:
+            bool: Whether the mandatory draw conditions are met.
+
+        """
+
+        ...
+        # TODO: Implement this method.
 
     def __eq__(self, other: Self) -> bool:
         return (
