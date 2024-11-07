@@ -1,0 +1,96 @@
+[project]
+name = "chessgame"
+version = "0.1.0"
+description = "Chess in python."
+requires-python = ">=3.12"
+
+[tool.ruff]
+target-version = "py312"
+cache-dir = "./.cache/ruff"
+line-length = 99
+indent-width = 4
+respect-gitignore = true
+
+[tool.ruff.lint]
+extend-select = [
+    "A",  # flake8-builtin
+    "ANN",  # flake8-annotations
+    "ARG",  # flake8-unused-arguments
+    "B",  # flake8-bugbear
+    "C901",  # mccabe-complexity
+    "D",  # pydocstyle
+    "E",  # pycodestyle
+    "F",  # Pyflakes
+    "FBT",  # flake8-boolean-trap
+    "G",  # flake8-logging-format
+    "I",  # isort
+    "LOG",  # flake8-logging
+    "N",  # pep8-naming
+    "NPY",  # NumPy rules
+    "PL",  # pylint
+    "PYI",  # flake8-pyi
+    "RET",  # flake8-return
+    "RSE",  # flake8-raise
+    "RUF",  # Ruff rules
+    "SIM",  # flake8-simplify
+    "TCH",  # flake8-type-checking
+    "TID",  # flake8-tidy-imports
+    "UP",  # pyupgrade
+    "W",  # pycodestyle
+]
+
+ignore = [
+    "W191",  # conflicting
+    "E111",  # conflicting
+    "E114",  # conflicting
+    "E117",  # conflicting
+    "D206",  # conflicting
+    "D300",  # conflicting
+    "D105",  # pydocstyle: missing docstring in magic method
+    "D107",  # pydocstyle: missing docstring in __init__
+    "D417",  # pydocstyle: documentation for every function parameter
+    "RUF001",  # Ruff: String contains ambiguous {}. Did you mean {}?
+    "RUF100",  # Ruff: Unused noqa directive
+    "ANN101",  # flake8-annotations: Missing type annotation for self in method
+    "ANN102",  # flake8-annotations: Missing type annotation for cls in classmethod
+    "ANN204",  # flake8-annotations: Missing return type annotation for special method
+    "PYI041",  # Use float instead of int | float
+    "PLR2004",  # pylint: allow using numeric literals.
+    "PLR0915",  # pylint: too-many-statements
+]
+
+[tool.ruff.format]
+quote-style = "double"
+docstring-code-format = true
+docstring-code-line-length = "dynamic"
+line-ending = "auto"
+skip-magic-trailing-comma = true
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+# Disable pydocstyle rules for test_*.py files
+"tests/**/*.py" = ["D100", "D102", "D103", "B018", "FBT001"]
+"__init__.py" = ["D104", "F401"]
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.ruff.lint.flake8-type-checking]
+strict = true
+
+[tool.ruff.lint.isort]
+split-on-trailing-comma = false
+
+[tool.ruff.lint.mccabe]
+max-complexity = 5
+
+[tool.mypy]
+python_version = "3.12"
+cache_dir = "./.cache/mypy"  # for consistency with other tools
+strict = true
+show_error_codes = true
+
+[tool.pytest.ini_options]
+cache_dir = "./.cache/pytest"  # for consistency with other tools
