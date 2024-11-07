@@ -1,17 +1,14 @@
 """Enums and Type aliases for the project."""
-# ——————————————————————————————————————————— Imports ——————————————————————————————————————————— #
-# Standard libraries
-from typing import Self
+
 from enum import StrEnum
+from typing import Self
 
-# ———————————————————————————————————————————— Code ———————————————————————————————————————————— #
-
-
-Square = tuple[int, int]
+type Square = tuple[int, int]
 
 
 class Colour(StrEnum):
     """Enum class for piece colours."""
+
     WHITE = "white"
     BLACK = "black"
 

@@ -1,16 +1,12 @@
 """This module provides the game class used to run the chess game."""
-# ——————————————————————————————————————————— Imports ——————————————————————————————————————————— #
-# Standard libraries
-import sys
-from typing import Self
-from enum import StrEnum
 
-# Dependencies
+import sys
+from enum import StrEnum
+from typing import Self
+
 from chess.board import Board, MoveOutcome
 from chess.colour_and_aliases import Colour
 from chess.user_interaction import request_input
-
-# ———————————————————————————————————————————— Code ———————————————————————————————————————————— #
 
 
 class _GameCommand(StrEnum):
@@ -41,14 +37,13 @@ class Chess:
         self.move_number: int = 1
         self.move_history: list[str] = []
 
-    def play(self):
+    def play(self) -> None:
         print("A game of chess begins.", end="\n\n")
         print(self.board)
 
         while True:
             raw_input = request_input(
-                f"{self.turn} to move on move {self.move_number}.\n"
-                f"Enter your move: "
+                f"{self.turn} to move on move {self.move_number}.\n" f"Enter your move: "
             )
 
             if (command := _GameCommand(raw_input)) != _GameCommand.MOVE:
@@ -105,20 +100,14 @@ class Chess:
             sys.exit(0)
 
         else:
-            print(
-                "Invalid input.",
-                "For a list of commands, type 'help'.",
-                sep="\n",
-                end="\n\n"
-            )
+            print("Invalid input.", "For a list of commands, type 'help'.", sep="\n", end="\n\n")
 
     def _after_match(self) -> None:
         """Prompts the user end of the game options."""
         while True:
             command = _GameCommand(
                 request_input(
-                    "Would you like to play again? [yes/no].\n"
-                    "For other options, type 'help': "
+                    "Would you like to play again? [yes/no].\n" "For other options, type 'help': "
                 )
             )
 
@@ -140,15 +129,14 @@ class Chess:
                     "- 'yes' to play again.",
                     "- 'no' to exit the game.",
                     "- 'save move history' to save the move history.",
-                    sep="\n", end="\n\n",
+                    sep="\n",
+                    end="\n\n",
                 )
                 continue
 
             else:
                 print(
-                    "Invalid input."
-                    "For a list of commands, type 'help'.",
-                    sep="\n", end="\n\n"
+                    "Invalid input." "For a list of commands, type 'help'.", sep="\n", end="\n\n"
                 )
                 continue
 
@@ -159,7 +147,6 @@ class Chess:
             outcome (MoveOutcome): The outcome of the move.
 
         """
-
         if outcome in MoveOutcome.GAME_OVER:
             print(f"The game has ended in a {outcome}.")
 
@@ -173,7 +160,6 @@ class Chess:
 
     def _save_move_history(self) -> None:
         """Saves the move history in a `.txt` file."""
-
         if not self.move_history:
             print("There is no move history to save.")
             return
@@ -190,24 +176,26 @@ class Chess:
                     "- a file name with the '.txt' extension.",
                     "- 'abort' to abort the operation.",
                     "- 'exit' to exit the game.",
-                    sep="\n", end="\n\n",
+                    sep="\n",
+                    end="\n\n",
                 )
                 continue
 
-            elif command == _GameCommand.ABORT:
+            if command == _GameCommand.ABORT:
                 return
 
-            elif command == _GameCommand.EXIT:
+            if command == _GameCommand.EXIT:
                 print("Exiting game...")
                 sys.exit(0)
 
             print(
                 "The file extension must be '.txt'.",
                 "For other options, type 'help'.",
-                sep="\n", end="\n\n",
+                sep="\n",
+                end="\n\n",
             )
 
-        grouped_list = [self.move_history[i: i + 2] for i in range(0, len(self.move_history), 2)]
+        grouped_list = [self.move_history[i : i + 2] for i in range(0, len(self.move_history), 2)]
         formatted_moves = "\n".join("; ".join(pair) for pair in grouped_list)
 
         with open(file_name, "w") as file:

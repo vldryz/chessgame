@@ -11,5 +11,4 @@ def request_input(prompt: str = "") -> str:
         str: The user's input.
 
     """
-
     return input(prompt).lower().strip()

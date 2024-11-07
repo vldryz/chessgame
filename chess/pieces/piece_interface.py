@@ -1,19 +1,18 @@
 """This module provides a base abstract class for chess pieces."""
-# ——————————————————————————————————————————— Imports ——————————————————————————————————————————— #
-# Standard libraries
-from typing import Self
+
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, Self
 
-# Dependencies
-from chess.colour_and_aliases import Colour, Square
+from chess.colour_and_aliases import Square
 
-# ———————————————————————————————————————————— Code ———————————————————————————————————————————— #
+if TYPE_CHECKING:
+    from chess.colour_and_aliases import Colour
 
 
 class Piece(ABC):
     """Interface class for chess pieces."""
 
-    def __init__(self, colour, icon):
+    def __init__(self, colour: Colour, icon: str):
         self.colour: Colour = colour
         self.icon: str = icon
         self.moved: bool = False
@@ -23,13 +22,12 @@ class Piece(ABC):
 
     @property
     def name(self) -> str:
+        """Piece name."""
         return self.__class__.__name__
 
     def __eq__(self, other: Self) -> bool:
         return (
-            self.colour == other.colour
-            and self.name == other.name
-            and self.moved == other.moved
+            self.colour == other.colour and self.name == other.name and self.moved == other.moved
         )
 
     @abstractmethod
@@ -47,5 +45,4 @@ class Piece(ABC):
             list[Square]: A list of moves to consider for the piece.
 
         """
-
-        raise NotImplementedError()
+        raise NotImplementedError

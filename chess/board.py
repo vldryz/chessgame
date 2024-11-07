@@ -1,20 +1,17 @@
 """This module provides the board class used to manage the state of the chess board."""
-# ——————————————————————————————————————————— Imports ——————————————————————————————————————————— #
-# Standard libraries
-from typing import Self
+
+from enum import Enum, Flag, StrEnum, auto
 from itertools import product
-from enum import Flag, StrEnum, Enum, auto
+from typing import Self
 
-# Dependencies
-from chess.pieces import Pawn, King, Knight, Rook, Bishop, Queen
 from chess.colour_and_aliases import Colour, Square
+from chess.pieces import Bishop, King, Knight, Pawn, Queen, Rook
 from chess.user_interaction import request_input
-
-# ———————————————————————————————————————————— Code ———————————————————————————————————————————— #
 
 
 class MoveOutcome(Flag):
     """Flag enumerator class for move outcomes."""
+
     SUCCESS = auto()
     FAILURE = auto()
     CHECK = auto()
@@ -28,6 +25,7 @@ class MoveOutcome(Flag):
 
 class _MoveCommand(StrEnum):
     """Enum class for moves."""
+
     SHORT_CASTLE = "o-o"
     LONG_CASTLE = "o-o-o"
     PIECE_MOVE = "piece move"  # Default command to play a move
@@ -39,6 +37,7 @@ class _MoveCommand(StrEnum):
 
 class _PromotionOption(StrEnum):
     """Enum class for promotion options."""
+
     QUEEN = "q"
     ROOK = "r"
     KNIGHT = "n"
@@ -53,6 +52,7 @@ class _PromotionOption(StrEnum):
 
 class _PromotionPiece(Enum):
     """Enum class for promotion piece types."""
+
     KNIGHT = Knight
     ROOK = Rook
     BISHOP = Bishop
@@ -134,7 +134,6 @@ class Board:
             MoveOutcome: The outcome of the move.
 
         """
-
         res = False
         if (move := _MoveCommand(raw_input)) == _MoveCommand.SHORT_CASTLE:
             res = self._short_castle(turn)
@@ -164,14 +163,16 @@ class Board:
             bool: Whether the move was played. False otherwise.
 
         """
-
         start, end = coordinates[0], coordinates[1]
         start_rank, start_file = start
         end_rank, end_file = end
 
         piece = self.state[start_rank][start_file]
         if not piece:
-            print(f"Invalid Move: There is no piece at {self._square_to_notation(start)}.", end="\n\n")
+            print(
+                f"Invalid Move: There is no piece at {self._square_to_notation(start)}.",
+                end="\n\n",
+            )
             return False
 
         if piece.colour != turn:
@@ -179,7 +180,10 @@ class Board:
             return False
 
         if not self._legal_move(start, end):
-            print(f"Invalid Move: {piece.name} cannot move to {self._square_to_notation(end)}.", end="\n\n")
+            print(
+                f"Invalid Move: {piece.name} cannot move to {self._square_to_notation(end)}.",
+                end="\n\n",
+            )
             return False
 
         self.state[start_rank][start_file], self.state[end_rank][end_file] = None, piece
@@ -196,7 +200,6 @@ class Board:
         self.en_passant_pawn = None
 
         if isinstance(piece, Pawn):
-
             if end_rank == 7 if turn == Colour.WHITE else 0:
                 option = self._request_pawn_promotion_option()
                 self.state[end_rank][end_file] = _PromotionPiece[option.name].value(turn)
@@ -220,7 +223,6 @@ class Board:
             bool: Whether the move is legal.
 
         """
-
         start_rank, start_file = start
         end_rank, end_file = end
         piece = self.state[start_rank][start_file]
@@ -233,7 +235,11 @@ class Board:
         en_passant_square = self.state[start_rank][end_file]
 
         # play the move
-        if isinstance(piece, Pawn) and abs(start_file - end_file) == 1 and not self.state[end_rank][end_file]:
+        if (
+            isinstance(piece, Pawn)
+            and abs(start_file - end_file) == 1
+            and not self.state[end_rank][end_file]
+        ):
             self.state[start_rank][end_file] = None
 
         self.state[start_rank][start_file], self.state[end_rank][end_file] = None, piece
@@ -260,9 +266,7 @@ class Board:
             bool: Whether the player has any legal move.
 
         """
-
         for start_rank, start_file in product(range(8), range(8)):
-
             if not (piece := self.state[start_rank][start_file]) or piece.colour != colour:
                 continue
 
@@ -284,14 +288,13 @@ class Board:
             bool: Whether the move is possible.
 
         """
-
         start_rank, start_file = start
         piece = self.state[start_rank][start_file]
 
         if isinstance(piece, Pawn):
             return self._possible_pawn_move(start, end)
 
-        if isinstance(piece, (Knight, King)):
+        if isinstance(piece, Knight | King):
             return self._possible_king_knight_move(start, end)
 
         if isinstance(piece, Bishop):
@@ -314,7 +317,6 @@ class Board:
             bool: Whether the move is possible.
 
         """
-
         start_rank, start_file = start
         end_rank, end_file = end
         piece = self.state[start_rank][start_file]
@@ -329,10 +331,7 @@ class Board:
 
             diff = 1 if piece.colour == Colour.WHITE else -1
 
-            return (
-                abs(start_rank - end_rank) != 2
-                or not self.state[start_rank + diff][start_file]
-            )
+            return abs(start_rank - end_rank) != 2 or not self.state[start_rank + diff][start_file]
 
         # Going diagonally to capture
         if end_square := self.state[end_rank][end_file]:
@@ -357,7 +356,6 @@ class Board:
             bool: Whether the move is possible.
 
         """
-
         start_rank, start_file = start
         end_rank, end_file = end
         piece = self.state[start_rank][start_file]
@@ -383,7 +381,6 @@ class Board:
             bool: Whether the move is possible.
 
         """
-
         start_rank, start_file = start
         end_rank, end_file = end
         piece = self.state[start_rank][start_file]
@@ -418,7 +415,6 @@ class Board:
             bool: Whether the move is possible.
 
         """
-
         start_rank, start_file = start
         end_rank, end_file = end
         piece = self.state[start_rank][start_file]
@@ -453,7 +449,6 @@ class Board:
             bool: Whether the move is possible.
 
         """
-
         start_rank, start_file = start
         end_rank, end_file = end
 
@@ -477,7 +472,6 @@ class Board:
             bool: Whether the king is checked.
 
         """
-
         king_coordinates = self._find_king(colour)
 
         for rank_, file_ in product(range(8), range(8)):
@@ -500,19 +494,13 @@ class Board:
             bool: Whether the move was played. False if the move was illegal.
 
         """
-
         rank = 0 if colour == Colour.WHITE else 7
 
         king = self.state[rank][4]
         rook = self.state[rank][7]
         in_between_squares = [(rank, 5), (rank, 6)]
 
-        if (
-            not isinstance(king, King)
-            or not isinstance(rook, Rook)
-            or king.moved
-            or rook.moved
-        ):
+        if not isinstance(king, King) or not isinstance(rook, Rook) or king.moved or rook.moved:
             print("Invalid Move: King or Rook has been moved.", end="\n\n")
             return False
 
@@ -551,20 +539,14 @@ class Board:
             bool: Whether the move was played. False if the move was illegal.
 
         """
-
         rank = 0 if colour == Colour.WHITE else 7
 
         king = self.state[rank][4]
         rook = self.state[rank][0]
         in_between_squares = [(rank, 2), (rank, 3)]
-        check_for_pieces = in_between_squares + [(rank, 1)]
+        check_for_pieces = [*in_between_squares, (rank, 1)]
 
-        if (
-            not isinstance(king, King)
-            or not isinstance(rook, Rook)
-            or king.moved
-            or rook.moved
-        ):
+        if not isinstance(king, King) or not isinstance(rook, Rook) or king.moved or rook.moved:
             print("Invalid Move: King or Rook has been moved.", end="\n\n")
             return False
 
@@ -607,7 +589,6 @@ class Board:
             ValueError: If the king was not found.
 
         """
-
         for rank_, file_ in product(range(8), range(8)):
             piece = self.state[rank_][file_]
             if isinstance(piece, King) and piece.colour == colour:
@@ -623,15 +604,14 @@ class Board:
             _PromotionOption: The option selected by the user.
 
         """
-
         while True:
             option = _PromotionOption(request_input("Pick a piece to promote to (Q/R/B/N): "))
 
             if option == _PromotionOption.INVALID:
                 print(
-                    "Please select a valid promotion option."
-                    "Type 'help' for help message.",
-                    sep="\n", end="\n\n"
+                    "Please select a valid promotion option." "Type 'help' for help message.",
+                    sep="\n",
+                    end="\n\n",
                 )
                 continue
 
@@ -643,7 +623,7 @@ class Board:
                     "- 'B': to promoted to a Bishop.",
                     "- 'N': to promoted to a Knight.",
                     sep="\n",
-                    end="\n\n"
+                    end="\n\n",
                 )
                 continue
 
@@ -662,7 +642,6 @@ class Board:
                 None if the move is invalid.
 
         """
-
         if len(notation) != 4:
             print(f"Invalid Move: {notation} is not a valid move.", end="\n\n")
             return None
@@ -675,9 +654,9 @@ class Board:
         # Check if the start and end files are valid
         if not {file_start, file_end}.issubset(set(files)):
             print(
-                "Invalid Move: File selection is invalid."
-                "Type 'help' for help message.",
-                sep="\n", end="\n\n"
+                "Invalid Move: File selection is invalid." "Type 'help' for help message.",
+                sep="\n",
+                end="\n\n",
             )
             return None
 
@@ -685,9 +664,9 @@ class Board:
         for rank in {rank_start, rank_end}:
             if not rank.isdigit() or int(rank) not in range(1, 9):
                 print(
-                    "Invalid Move: Rank selection is invalid."
-                    "Type 'help' for help message.",
-                    sep="\n", end="\n\n"
+                    "Invalid Move: Rank selection is invalid." "Type 'help' for help message.",
+                    sep="\n",
+                    end="\n\n",
                 )
                 return None
 
@@ -707,16 +686,12 @@ class Board:
             str: The square's coordinates in chess notation.
 
         """
-
         rank, file = square
         files = ["a", "b", "c", "d", "e", "f", "g", "h"]
         return files[file] + str(rank + 1)
 
     def __eq__(self, other: Self) -> bool:
-        return (
-            self.state == other.state
-            and self.en_passant_pawn == other.en_passant_pawn
-        )
+        return self.state == other.state and self.en_passant_pawn == other.en_passant_pawn
 
     def __str__(self) -> str:
         return (
