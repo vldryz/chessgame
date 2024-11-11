@@ -17,5 +17,5 @@ fix:
 unsafe_fixes:
 	ruff check $(SOURCES) --fix  --unsafe-fixes
 
-tests:
+test:
 	pytest tests/
