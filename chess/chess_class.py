@@ -1,8 +1,10 @@
 """This module provides the game class used to run the chess game."""
 
+from __future__ import annotations
+
 import sys
 from enum import StrEnum
-from typing import Self
+from typing import override
 
 from chess.board import Board, MoveOutcome
 from chess.colour_and_aliases import Colour
@@ -26,11 +28,14 @@ class _GameCommand(StrEnum):
     LOAD = "load"  # Implement in the future
 
     @classmethod
-    def _missing_(cls, value: str) -> Self:
+    @override
+    def _missing_(cls, value: object) -> _GameCommand:
         return cls.MOVE
 
 
 class Chess:
+    """Handles the whole game."""
+
     def __init__(self, board: Board | None = None):
         self.board: Board = board or Board()
         self.turn: Colour = Colour.WHITE
@@ -38,6 +43,7 @@ class Chess:
         self.move_history: list[str] = []
 
     def play(self) -> None:
+        """Launch a new game."""
         print("A game of chess begins.", end="\n\n")
         print(self.board)
 

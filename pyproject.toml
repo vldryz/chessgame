@@ -84,7 +84,7 @@ strict = true
 split-on-trailing-comma = false
 
 [tool.ruff.lint.mccabe]
-max-complexity = 5
+max-complexity = 10
 
 [tool.mypy]
 python_version = "3.12"

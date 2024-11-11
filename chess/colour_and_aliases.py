@@ -1,7 +1,8 @@
 """Enums and Type aliases for the project."""
 
+from __future__ import annotations
+
 from enum import StrEnum
-from typing import Self
 
 type Square = tuple[int, int]
 
@@ -12,7 +13,7 @@ class Colour(StrEnum):
     WHITE = "white"
     BLACK = "black"
 
-    def __invert__(self) -> Self:
+    def __invert__(self) -> Colour:
         return Colour.BLACK if self == Colour.WHITE else Colour.WHITE
 
     def __str__(self) -> str:

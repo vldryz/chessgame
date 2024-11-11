@@ -1,12 +1,17 @@
 """This module provides the board class used to manage the state of the chess board."""
 
+from __future__ import annotations
+
 from enum import Enum, Flag, StrEnum, auto
 from itertools import product
-from typing import Self
+from typing import TYPE_CHECKING, override
 
-from chess.colour_and_aliases import Colour, Square
-from chess.pieces import Bishop, King, Knight, Pawn, Queen, Rook
+from chess.colour_and_aliases import Colour
+from chess.pieces import Bishop, King, Knight, Pawn, Piece, Queen, Rook
 from chess.user_interaction import request_input
+
+if TYPE_CHECKING:
+    from chess.colour_and_aliases import Square
 
 
 class MoveOutcome(Flag):
@@ -20,7 +25,10 @@ class MoveOutcome(Flag):
     GAME_OVER = CHECKMATE | STALEMATE
 
     def __str__(self) -> str:
-        return self.name.lower().replace("_", " ")
+        if (name := self.name) is None:
+            raise TypeError("name should be a string")
+
+        return name.lower().replace("_", " ")
 
 
 class _MoveCommand(StrEnum):
@@ -31,7 +39,8 @@ class _MoveCommand(StrEnum):
     PIECE_MOVE = "piece move"  # Default command to play a move
 
     @classmethod
-    def _missing_(cls, value: str) -> Self:
+    @override
+    def _missing_(cls, value: object) -> _MoveCommand:
         return cls.PIECE_MOVE
 
 
@@ -46,7 +55,8 @@ class _PromotionOption(StrEnum):
     INVALID = "invalid"  # Default value for invalid commands
 
     @classmethod
-    def _missing_(cls, value: str) -> Self:
+    @override
+    def _missing_(cls, value: object) -> _PromotionOption:
         return cls.INVALID
 
 
@@ -92,7 +102,7 @@ class Board:
 
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.state: list[list[Pawn | King | Knight | Rook | Bishop | Queen | None]] = [
             [
                 Rook(Colour.WHITE),
@@ -227,6 +237,9 @@ class Board:
         end_rank, end_file = end
         piece = self.state[start_rank][start_file]
 
+        if not isinstance(piece, Piece):
+            raise TypeError
+
         if not self._possible_move(start, end):
             return False
 
@@ -277,8 +290,10 @@ class Board:
         return False
 
     def _possible_move(self, start: Square, end: Square) -> bool:
-        """Checks whether a move is possible, regardless of whether
-        it will put the king of the player making the move in check.
+        """Checks whether a move is possible.
+
+        Possible regardless of whether it will put the king
+        of the player making the move in check.
 
         Args:
             start (Square): The square to move from.
@@ -306,8 +321,10 @@ class Board:
         return self._possible_queen_move(start, end)
 
     def _possible_pawn_move(self, start: Square, end: Square) -> bool:
-        """Checks whether a pawn move is possible, regardless of whether
-        it will put the king of the player making the move in check.
+        """Checks whether a Pawn move is possible.
+
+        Possible regardless of whether it will put the king
+        of the player making the move in check.
 
         Args:
             start (Square): The square to move from.
@@ -320,6 +337,9 @@ class Board:
         start_rank, start_file = start
         end_rank, end_file = end
         piece = self.state[start_rank][start_file]
+
+        if not isinstance(piece, Piece):
+            raise TypeError
 
         if end not in piece.moves_to_consider(start):
             return False
@@ -345,8 +365,10 @@ class Board:
         )
 
     def _possible_king_knight_move(self, start: Square, end: Square) -> bool:
-        """Checks whether a knight or a king move is possible, regardless of
-        whether it will put the king of the player making the move in check.
+        """Checks whether a Knight move is possible.
+
+        Possible regardless of whether it will put the king
+        of the player making the move in check.
 
         Args:
             start (Square): The square to move from.
@@ -359,6 +381,12 @@ class Board:
         start_rank, start_file = start
         end_rank, end_file = end
         piece = self.state[start_rank][start_file]
+
+        if not isinstance(piece, Piece):
+            raise TypeError
+
+        if not isinstance(piece, Piece):
+            raise TypeError
 
         if end not in piece.moves_to_consider(start):
             return False
@@ -370,8 +398,10 @@ class Board:
         )
 
     def _possible_bishop_move(self, start: Square, end: Square) -> bool:
-        """Checks whether a bishop move is possible, regardless of whether
-        it will put the king of the player making the move in check.
+        """Checks whether a Bishop move is possible.
+
+        Possible regardless of whether it will put the king
+        of the player making the move in check.
 
         Args:
             start (Square): The square to move from.
@@ -384,6 +414,9 @@ class Board:
         start_rank, start_file = start
         end_rank, end_file = end
         piece = self.state[start_rank][start_file]
+
+        if not isinstance(piece, Piece):
+            raise TypeError
 
         if end not in piece.moves_to_consider(start):
             return False
@@ -404,8 +437,10 @@ class Board:
         )
 
     def _possible_rook_move(self, start: Square, end: Square) -> bool:
-        """Checks whether a rook move is possible, regardless of whether
-        it will put the king of the player making the move in check.
+        """Checks whether a Rook move is possible.
+
+        Possible regardless of whether it will put the king
+        of the player making the move in check.
 
         Args:
             start (Square): The square to move from.
@@ -418,6 +453,9 @@ class Board:
         start_rank, start_file = start
         end_rank, end_file = end
         piece = self.state[start_rank][start_file]
+
+        if not isinstance(piece, Piece):
+            raise TypeError
 
         if end not in piece.moves_to_consider(start):
             return False
@@ -438,8 +476,10 @@ class Board:
         )
 
     def _possible_queen_move(self, start: Square, end: Square) -> bool:
-        """Checks whether a queen move is possible, regardless of whether
-        it will put the king of the player making the move in check.
+        """Checks whether a queen move is possible.
+
+        Possible regardless of whether it will put the king
+        of the player making the move in check.
 
         Args:
             start (Square): The square to move from.
@@ -690,7 +730,10 @@ class Board:
         files = ["a", "b", "c", "d", "e", "f", "g", "h"]
         return files[file] + str(rank + 1)
 
-    def __eq__(self, other: Self) -> bool:
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Board):
+            raise NotImplementedError
+
         return self.state == other.state and self.en_passant_pawn == other.en_passant_pawn
 
     def __str__(self) -> str:

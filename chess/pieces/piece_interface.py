@@ -1,22 +1,24 @@
 """This module provides a base abstract class for chess pieces."""
 
-from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Self
+from __future__ import annotations
 
-from chess.colour_and_aliases import Square
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, final
 
 if TYPE_CHECKING:
-    from chess.colour_and_aliases import Colour
+    from chess.colour_and_aliases import Colour, Square
 
 
 class Piece(ABC):
     """Interface class for chess pieces."""
 
+    @abstractmethod
     def __init__(self, colour: Colour, icon: str):
         self.colour: Colour = colour
         self.icon: str = icon
         self.moved: bool = False
 
+    @final
     def __str__(self) -> str:
         return self.icon
 
@@ -25,7 +27,10 @@ class Piece(ABC):
         """Piece name."""
         return self.__class__.__name__
 
-    def __eq__(self, other: Self) -> bool:
+    @final
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Piece):
+            raise NotImplementedError
         return (
             self.colour == other.colour and self.name == other.name and self.moved == other.moved
         )
