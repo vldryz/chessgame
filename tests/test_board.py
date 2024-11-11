@@ -1,15 +1,10 @@
 """This module provides tests for the Board class."""
-# ——————————————————————————————————————————— Imports ——————————————————————————————————————————— #
-# 3rd party libraries
 import pytest
 from pytest import MonkeyPatch, CaptureFixture
 
-# Dependencies
 from chess import Chess
 from chess.board import Board, MoveOutcome, _PromotionOption, _PromotionPiece
 from chess.colour_and_aliases import Colour, Square
-
-# ———————————————————————————————————————————— Tests ———————————————————————————————————————————— #
 
 
 class TestDefaultBoard:

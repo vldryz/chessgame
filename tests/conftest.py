@@ -1,18 +1,12 @@
 """This module provides custom chess fixtures for tests."""
-# ——————————————————————————————————————————— Imports ——————————————————————————————————————————— #
-# Standard libraries
 from itertools import product
 
-# 3rd party libraries
 import pytest
 
-# Dependencies
 from chess import Chess
 from chess.board import Board
 from chess.pieces import Pawn, Knight, Bishop, Rook, Queen, King
 from chess.colour_and_aliases import Colour
-
-# —————————————————————————————————————————— Fixtures —————————————————————————————————————————— #
 
 
 @pytest.fixture

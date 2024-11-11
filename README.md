@@ -7,7 +7,7 @@ algorithm in the future, capable of beating me. Additionally, I plan to develop
 a user-friendly GUI for an enhanced gaming experience.
 
 ## Installation
-Requires Python 3.11 or higher.
+Requires Python 3.12 or higher.
 
 ```sh
 git clone https://github.com/vldryz/chessgame.git

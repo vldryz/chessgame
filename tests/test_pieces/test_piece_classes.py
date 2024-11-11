@@ -1,13 +1,8 @@
 """This module provides tests for chess pieces."""
-# ——————————————————————————————————————————— Imports ——————————————————————————————————————————— #
-# 3rd party libraries
 import pytest
 
-# Dependencies
 from chess.pieces import Pawn, Knight, Bishop, Rook, Queen, King
 from chess.colour_and_aliases import Colour, Square
-
-# ———————————————————————————————————————————— Tests ———————————————————————————————————————————— #
 
 
 class TestPawn:

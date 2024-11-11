@@ -1,20 +1,13 @@
 """This module provides tests for the Chess class."""
-# ——————————————————————————————————————————— Imports ——————————————————————————————————————————— #
-# Standard libraries
 import os
 from tempfile import TemporaryDirectory
 
-# 3rd party libraries
 import pytest
 from pytest import MonkeyPatch, CaptureFixture
 from pytest_mock import MockerFixture
 
-# Dependencies
 from chess import Chess
 from chess.board import MoveOutcome
-
-# ———————————————————————————————————————————— Tests ———————————————————————————————————————————— #
-
 
 class TestDefaultChess:
     """Test the default chess game."""
