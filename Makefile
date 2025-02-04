@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-SOURCES ?= chess/ tests/
+SOURCES := chess/ tests/
 
 lint:
 	ruff format $(SOURCES) --check

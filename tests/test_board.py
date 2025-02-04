@@ -6,6 +6,7 @@ from pytest import CaptureFixture, MonkeyPatch
 from chess import Chess
 from chess.board import Board, MoveOutcome, _PromotionOption, _PromotionPiece
 from chess.colour_and_aliases import Colour, Square
+from chess.pieces.piece_interface import Piece
 
 
 class TestDefaultBoard:
@@ -40,7 +41,7 @@ class TestDefaultBoard:
         ],
     )
     def test_make_move(
-        self, raw_input: str, turn: Colour, expected: MoveOutcome, capfd: CaptureFixture
+        self, raw_input: str, turn: Colour, expected: MoveOutcome, capfd: CaptureFixture[str]
     ) -> None:
         board = Board()
         assert board.make_move(raw_input, turn) == expected
@@ -50,13 +51,21 @@ class TestDefaultBoard:
         """Test that moving a piece sets the moved attribute."""
         board = Board()
 
-        assert board.state[1][4].moved is False
+        piece = board.state[1][4]
+        assert isinstance(piece, Piece)
+        assert piece.moved is False
         board._move_piece(((1, 4), (3, 4)), Colour.WHITE)
-        assert board.state[3][4].moved is True
+        piece = board.state[3][4]
+        assert isinstance(piece, Piece)
+        assert piece.moved is True
 
-        assert board.state[7][6].moved is False
+        piece = board.state[7][6]
+        assert isinstance(piece, Piece)
+        assert piece.moved is False
         board._move_piece(((7, 6), (5, 5)), Colour.BLACK)
-        assert board.state[5][5].moved is True
+        piece = board.state[5][5]
+        assert isinstance(piece, Piece)
+        assert piece.moved is True
 
     def test_pawn_two_square_movement_sets_en_passant(self) -> None:
         """Test that a pawn moving two squares sets the en passant attribute.
@@ -93,7 +102,7 @@ class TestDefaultBoard:
         ],
     )
     def test_move_piece(
-        self, start: Square, end: Square, turn: Colour, expected: bool, capfd: CaptureFixture
+        self, start: Square, end: Square, turn: Colour, expected: bool, capfd: CaptureFixture[str]
     ) -> None:
         """Test piece movement. Test that the state of the boards updates correctly."""
         board = Board()
@@ -304,7 +313,7 @@ class TestDefaultBoard:
         assert board._king_checked(colour) is False
 
     @pytest.mark.parametrize("colour", [Colour.WHITE, Colour.BLACK])
-    def test_cannot_long_castle(self, colour: Colour, capfd: CaptureFixture) -> None:
+    def test_cannot_long_castle(self, colour: Colour, capfd: CaptureFixture[str]) -> None:
         """Test cannot long castle on move 1 and that the method does not alter the state."""
         board = Board()
         assert board._long_castle(colour) is False
@@ -313,7 +322,7 @@ class TestDefaultBoard:
         capfd.readouterr()  # clear stdout
 
     @pytest.mark.parametrize("colour", [Colour.WHITE, Colour.BLACK])
-    def test_cannot_short_castle(self, colour: Colour, capfd: CaptureFixture) -> None:
+    def test_cannot_short_castle(self, colour: Colour, capfd: CaptureFixture[str]) -> None:
         """Test cannot short castle on move 1 and that the method does not alter the state."""
         board = Board()
         assert board._short_castle(colour) is False
@@ -327,7 +336,7 @@ class TestDefaultBoard:
         assert board._find_king(colour) == expected
 
     def test_request_pawn_promotion_options(
-        self, monkeypatch: MonkeyPatch, capfd: CaptureFixture
+        self, monkeypatch: MonkeyPatch, capfd: CaptureFixture[str]
     ) -> None:
         # mimic user inputs
         inputs = iter(["h", "p", "help", "q"])
@@ -356,7 +365,7 @@ class TestDefaultBoard:
         ],
     )
     def test_user_input_notation_to_coordinates(
-        self, notation: str, expected: tuple[Square, Square] | None, capfd: CaptureFixture
+        self, notation: str, expected: tuple[Square, Square] | None, capfd: CaptureFixture[str]
     ) -> None:
         board = Board()
         assert board._user_input_notation_to_coordinates(notation) == expected
@@ -411,7 +420,7 @@ class TestBoardOne:
         raw_input: str,
         turn: Colour,
         expected: MoveOutcome,
-        capfd: CaptureFixture,
+        capfd: CaptureFixture[str],
     ) -> None:
         board = game_one.board
         assert board.make_move(raw_input, turn) == expected
@@ -419,11 +428,12 @@ class TestBoardOne:
         capfd.readouterr()  # clear stdout
 
     def test_white_can_short_castle_but_cannot_long_castle(
-        self, game_one: Chess, capfd: CaptureFixture
+        self, game_one: Chess, capfd: CaptureFixture[str]
     ) -> None:
-        """Test that white can short castle but cannot long castle.
+        """For Test Board One King castles.
 
-        And that the state of the board is updated correctly.
+        White can long castle but cannot short castle;
+        the state of the board is updated correctly.
         """
         board = game_one.board
         assert board._long_castle(Colour.WHITE) is False
@@ -436,9 +446,11 @@ class TestBoardOne:
         capfd.readouterr()  # clear stdout
 
     def test_black_can_long_castle_but_cannot_short_castle(
-        self, game_one: Chess, capfd: CaptureFixture
+        self, game_one: Chess, capfd: CaptureFixture[str]
     ) -> None:
-        """Test that black can long castle but cannot short castle;
+        """For Test Board One King castles.
+
+        Black can long castle but cannot short castle;
         the state of the board is updated correctly.
         """
         board = game_one.board
@@ -452,11 +464,14 @@ class TestBoardOne:
         capfd.readouterr()  # clear stdout
 
     def test_en_passant_capture(self, game_one: Chess) -> None:
-        """Test that a pawn can capture en passant
-        the start square is empty;
-        the capturing pawn is moved to the target square;
-        the captured pawn is removed from the board;
-        the board is updated correctly.
+        """Test en passant capture.
+
+        Test that:
+            A pawn can capture en passant;
+            The start square is empty;
+            The capturing pawn is moved to the target square;
+            The captured pawn is removed from the board;
+            The board is updated correctly.
         """
         board = game_one.board
         assert board.make_move("e5f6", Colour.WHITE) == MoveOutcome.SUCCESS
@@ -466,10 +481,10 @@ class TestBoardOne:
         assert board.en_passant_pawn is None
 
     def test_possible_move_is_not_necessarily_legal(self, game_one: Chess) -> None:
-        """Test that a possible move is not necessarily legal;
-        the board is not updated.
+        """Test that a possible move is not necessarily legal.
 
-        Black king could technically move to f7, but it would be under check.
+        And that the board is not updated. Black king could technically move to f7,
+        but it would be under check.
         """
         board = game_one.board
         assert board._possible_move((7, 4), (6, 5)) is True
@@ -492,16 +507,18 @@ class TestBoardOne:
         self,
         game_one: Chess,
         monkeypatch: MonkeyPatch,
-        capfd: CaptureFixture,
+        capfd: CaptureFixture[str],
         end_square_raw: str,
         end_square: Square,
         user_input: str,
     ) -> None:
-        """Test that a pawn promotion is handled correctly;
-        the pawn is removed from the board;
-        the correct piece is placed on the board;
-        the black king is in check after h7g8 capture and promotion
-            to either a Queen or Rook.
+        """Test pawn promotion.
+
+        Test that:
+            The pawn is removed from the board;
+            The correct piece is placed on the board;
+            The black king is in check after h7g8 capture and promotion
+                to either a Queen or Rook.
         """
         monkeypatch.setattr("builtins.input", lambda _: user_input)
 
@@ -529,23 +546,22 @@ class TestBoardOne:
 
 
 class TestBoardTwo:
-    """This class provides tests for the custom board position
-    `board_two` from `conftest.py`.
-    """
+    """Test BoardTwo test board."""
 
     def test_capturing_king_raises_value_error(self, game_two: Chess) -> None:
         """Test that capturing the king raises a ValueError.
 
-        Note: capturing the king must never be an option in the game.
-        If a player is in check and the game has not ended,
-        it is their move, and they can get out of check.
+        Note:
+            Capturing the king must never be an option in the game.
+            If a player is in check and the game has not ended,
+            it is their move, and they can get out of check.
         """
         board = game_two.board
         with pytest.raises(ValueError):
             board.make_move("g5f7", Colour.WHITE)
 
     def test_attempting_to_capture_king_with_illegal_move_does_not_raise_value_error(
-        self, game_two, capfd: CaptureFixture
+        self, game_two: Chess, capfd: CaptureFixture[str]
     ) -> None:
         board = game_two.board
         board.make_move("f7g8", Colour.BLACK)
@@ -553,7 +569,9 @@ class TestBoardTwo:
 
         capfd.readouterr()  # clear stdout
 
-    def test_checkmate_sequence_of_moves(self, game_two: Chess, capfd: CaptureFixture) -> None:
+    def test_checkmate_sequence_of_moves(
+        self, game_two: Chess, capfd: CaptureFixture[str]
+    ) -> None:
         board = game_two.board
 
         moves = ["f7g8", "a2a3", "f2h2"]

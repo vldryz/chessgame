@@ -15,11 +15,9 @@ class TestDefaultChess:
     """Test the default chess game."""
 
     def test_move_history_is_saved_to_file(
-        self, mocker: MockerFixture, monkeypatch: MonkeyPatch, capfd: CaptureFixture
+        self, mocker: MockerFixture, monkeypatch: MonkeyPatch, capfd: CaptureFixture[str]
     ) -> None:
-        """Test that the move history is saved to a file when the user
-        inputs 'save move history', and the file content after a match ends.
-        """
+        """Test func that saves the move history."""
         mocker.patch(
             "chess.board.Board.make_move",
             side_effect=[MoveOutcome.SUCCESS, MoveOutcome.SUCCESS, MoveOutcome.CHECKMATE],
@@ -52,7 +50,7 @@ class TestDefaultChess:
                 assert f.read() == "1. e2e4; 1. e7e5\n2. b1c3"
 
     def test_game_ended_in_checkmate_prompts_option_to_continue(
-        self, mocker: MockerFixture, monkeypatch: MonkeyPatch, capfd: CaptureFixture
+        self, mocker: MockerFixture, monkeypatch: MonkeyPatch, capfd: CaptureFixture[str]
     ) -> None:
         mocker.patch("chess.board.Board.make_move", return_value=MoveOutcome.CHECKMATE)
         after_match_spy = mocker.patch(
@@ -68,10 +66,10 @@ class TestDefaultChess:
         capfd.readouterr()  # clear stdout
 
         after_match_spy.assert_called_once()
-        assert pytest_wrapped_e.type == SystemExit
+        assert pytest_wrapped_e.type is SystemExit
         assert pytest_wrapped_e.value.code == 0
 
-    def test_exit(self, monkeypatch: MonkeyPatch, capfd: CaptureFixture) -> None:
+    def test_exit(self, monkeypatch: MonkeyPatch, capfd: CaptureFixture[str]) -> None:
         """Test that the program exits with code 0 when the user inputs 'exit'."""
         monkeypatch.setattr("builtins.input", lambda _: "exit")
 
@@ -80,15 +78,13 @@ class TestDefaultChess:
 
         capfd.readouterr()  # clear stdout
 
-        assert pytest_wrapped_e.type == SystemExit
+        assert pytest_wrapped_e.type is SystemExit
         assert pytest_wrapped_e.value.code == 0
 
     def test_moves_are_processed_correctly(
-        self, monkeypatch: MonkeyPatch, capfd: CaptureFixture
+        self, monkeypatch: MonkeyPatch, capfd: CaptureFixture[str]
     ) -> None:
-        """Test that the program processes user input moves correctly.
-        The sequence of moves leads to a checkmate of the white king on move 2.
-        """
+        """Test that moves are processed correctly."""
         chess = Chess()
 
         inputs = iter(["f2f3", "e7e5", "g2g4", "d8h4", "no"])
@@ -99,5 +95,5 @@ class TestDefaultChess:
 
         capfd.readouterr()  # clear stdout
 
-        assert pytest_wrapped_e.type == SystemExit
+        assert pytest_wrapped_e.type is SystemExit
         assert pytest_wrapped_e.value.code == 0
