@@ -1,12 +1,13 @@
 """This module provides custom chess fixtures for tests."""
+
 from itertools import product
 
 import pytest
 
 from chess import Chess
 from chess.board import Board
-from chess.pieces import Pawn, Knight, Bishop, Rook, Queen, King
 from chess.colour_and_aliases import Colour
+from chess.pieces import Bishop, King, Knight, Pawn, Queen, Rook
 
 
 @pytest.fixture
@@ -30,15 +31,10 @@ def game_one() -> Chess:
         Chess: a Chess instance of custom state.
 
     """
-
     board = Board()
 
     board.state = [
-        [
-            *[None] * 4,
-            King(Colour.WHITE),
-            *[None] * 2,
-            Rook(Colour.WHITE)],
+        [*[None] * 4, King(Colour.WHITE), *[None] * 2, Rook(Colour.WHITE)],
         [
             *[None] * 2,
             Pawn(Colour.WHITE),
@@ -47,46 +43,26 @@ def game_one() -> Chess:
             None,
             Pawn(Colour.WHITE),
         ],
-        [
-            *[None] * 2,
-            Knight(Colour.WHITE),
-            *[None] * 5,
-        ],
+        [*[None] * 2, Knight(Colour.WHITE), *[None] * 5],
         [None] * 8,
-        [
-            *[None] * 3,
-            Queen(Colour.WHITE),
-            Pawn(Colour.WHITE),
-            Pawn(Colour.BLACK),
-            *[None] * 2,
-        ],
+        [*[None] * 3, Queen(Colour.WHITE), Pawn(Colour.WHITE), Pawn(Colour.BLACK), *[None] * 2],
         [None] * 8,
-        [
-            *[None] * 3,
-            Pawn(Colour.BLACK),
-            *[None] * 3,
-            Pawn(Colour.WHITE),
-        ],
-        [
-            Rook(Colour.BLACK),
-            *[None] * 3,
-            King(Colour.BLACK),
-            None,
-            Bishop(Colour.BLACK),
-            None,
-        ],
+        [*[None] * 3, Pawn(Colour.BLACK), *[None] * 3, Pawn(Colour.WHITE)],
+        [Rook(Colour.BLACK), *[None] * 3, King(Colour.BLACK), None, Bishop(Colour.BLACK), None],
     ]
 
     # everything in the middle has moved
     for rank, file in product([2, 3, 4, 5], range(8)):
-        if board.state[rank][file] is not None:
-            board.state[rank][file].moved = True
+        if (piece := board.state[rank][file]) is not None:
+            piece.moved = True
 
     # h7 pawn has also moved
-    board.state[6][7].moved = True
+    if (piece := board.state[6][7]) is not None:
+        piece.moved = True
 
     # on the last move Black played f7f5 with a pawn. It is available for en passant
-    board.en_passant_pawn = board.state[4][5]
+    if isinstance((piece := board.state[4][5]), Pawn):
+        board.en_passant_pawn = piece
 
     # Load the board into a Chess instance
     chess = Chess()
@@ -117,7 +93,6 @@ def game_two() -> Chess:
         Chess: a Chess instance of custom state.
 
     """
-
     board = Board()
 
     board.state = [
@@ -141,31 +116,10 @@ def game_two() -> Chess:
             None,
             Pawn(Colour.WHITE),
         ],
-        [
-            *[None] * 6,
-            Pawn(Colour.BLACK),
-            None,
-        ],
-        [
-            *[None] * 4,
-            Pawn(Colour.WHITE),
-            None,
-            Pawn(Colour.WHITE),
-            None,
-        ],
-        [
-            *[None] * 4,
-            Pawn(Colour.BLACK),
-            None,
-            Knight(Colour.WHITE),
-            None,
-        ],
-        [
-            Pawn(Colour.BLACK),
-            *[None] * 4,
-            Knight(Colour.BLACK),
-            *[None] * 2,
-        ],
+        [*[None] * 6, Pawn(Colour.BLACK), None],
+        [*[None] * 4, Pawn(Colour.WHITE), None, Pawn(Colour.WHITE), None],
+        [*[None] * 4, Pawn(Colour.BLACK), None, Knight(Colour.WHITE), None],
+        [Pawn(Colour.BLACK), *[None] * 4, Knight(Colour.BLACK), *[None] * 2],
         [
             None,
             Pawn(Colour.BLACK),
@@ -187,13 +141,14 @@ def game_two() -> Chess:
 
     # everything in the middle has moved
     for rank, file in product([2, 3, 4, 5], range(8)):
-        if board.state[rank][file] is not None:
-            board.state[rank][file].moved = True
+        if (piece := board.state[rank][file]) is not None:
+            piece.moved = True
 
     # c8, f7, f1, h1, e2, f2 have also moved
     squares = [(7, 2), (6, 5), (0, 5), (0, 7), (1, 4), (1, 5)]
     for rank, file in squares:
-        board.state[rank][file].moved = True
+        if (piece := board.state[rank][file]) is not None:
+            piece.moved = True
 
     # Load the board into a Chess instance
     chess = Chess()

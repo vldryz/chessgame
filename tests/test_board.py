@@ -1,15 +1,19 @@
 """This module provides tests for the Board class."""
+
 import pytest
-from pytest import MonkeyPatch, CaptureFixture
+from pytest import CaptureFixture, MonkeyPatch
 
 from chess import Chess
 from chess.board import Board, MoveOutcome, _PromotionOption, _PromotionPiece
 from chess.colour_and_aliases import Colour, Square
+from chess.pieces.piece_interface import Piece
 
 
 class TestDefaultBoard:
     """This class provides tests for the default board state.
-    That is, the board state at the start of a game."""
+
+    That is, the board state at the start of a game.
+    """
 
     @pytest.mark.parametrize(
         "raw_input, turn, expected",
@@ -23,7 +27,6 @@ class TestDefaultBoard:
             ("e7e5", Colour.BLACK, MoveOutcome.SUCCESS),
             ("a7a6", Colour.BLACK, MoveOutcome.SUCCESS),
             ("g8f6", Colour.BLACK, MoveOutcome.SUCCESS),
-
             # invalid moves
             ("o-o", Colour.WHITE, MoveOutcome.FAILURE),
             ("o-o-o", Colour.WHITE, MoveOutcome.FAILURE),
@@ -37,27 +40,38 @@ class TestDefaultBoard:
             ("nonsense", Colour.WHITE, MoveOutcome.FAILURE),
         ],
     )
-    def test_make_move(self, raw_input: str, turn: Colour, expected: MoveOutcome, capfd: CaptureFixture):
+    def test_make_move(
+        self, raw_input: str, turn: Colour, expected: MoveOutcome, capfd: CaptureFixture[str]
+    ) -> None:
         board = Board()
         assert board.make_move(raw_input, turn) == expected
         capfd.readouterr()  # clear stdout
 
-    def test_moving_a_piece_sets_moved_attribute(self):
+    def test_moving_a_piece_sets_moved_attribute(self) -> None:
         """Test that moving a piece sets the moved attribute."""
         board = Board()
 
-        assert board.state[1][4].moved is False
+        piece = board.state[1][4]
+        assert isinstance(piece, Piece)
+        assert piece.moved is False
         board._move_piece(((1, 4), (3, 4)), Colour.WHITE)
-        assert board.state[3][4].moved is True
+        piece = board.state[3][4]
+        assert isinstance(piece, Piece)
+        assert piece.moved is True
 
-        assert board.state[7][6].moved is False
+        piece = board.state[7][6]
+        assert isinstance(piece, Piece)
+        assert piece.moved is False
         board._move_piece(((7, 6), (5, 5)), Colour.BLACK)
-        assert board.state[5][5].moved is True
+        piece = board.state[5][5]
+        assert isinstance(piece, Piece)
+        assert piece.moved is True
 
-    def test_pawn_two_square_movement_sets_en_passant(self):
+    def test_pawn_two_square_movement_sets_en_passant(self) -> None:
         """Test that a pawn moving two squares sets the en passant attribute.
-        And that a move after it is removed"""
 
+        And that a move after it is removed.
+        """
         board = Board()
 
         board._move_piece(((1, 4), (3, 4)), Colour.WHITE)
@@ -78,7 +92,6 @@ class TestDefaultBoard:
             ((6, 0), (5, 0), Colour.BLACK, True),
             ((7, 1), (5, 2), Colour.BLACK, True),
             ((7, 6), (5, 5), Colour.BLACK, True),
-
             # invalid moves
             ((1, 4), (4, 4), Colour.WHITE, False),
             ((1, 4), (7, 7), Colour.WHITE, False),
@@ -88,9 +101,10 @@ class TestDefaultBoard:
             ((7, 6), (6, 3), Colour.BLACK, False),
         ],
     )
-    def test_move_piece(self, start: Square, end: Square, turn: Colour, expected: bool, capfd: CaptureFixture):
-        """Test piece movement. Test that the state of the boards updates correctly"""
-
+    def test_move_piece(
+        self, start: Square, end: Square, turn: Colour, expected: bool, capfd: CaptureFixture[str]
+    ) -> None:
+        """Test piece movement. Test that the state of the boards updates correctly."""
         board = Board()
         assert board._move_piece((start, end), turn) is expected
 
@@ -114,7 +128,6 @@ class TestDefaultBoard:
             ((7, 6), (5, 5), True),
             ((1, 0), (3, 0), True),
             ((1, 0), (2, 0), True),
-
             # invalid moves
             ((1, 4), (4, 4), False),
             ((1, 4), (2, 3), False),
@@ -134,9 +147,8 @@ class TestDefaultBoard:
             ((1, 0), (7, 7), False),
         ],
     )
-    def test_legal_move(self, start: Square, end: Square, expected: bool):
+    def test_legal_move(self, start: Square, end: Square, expected: bool) -> None:
         """Test legal moves on move 1."""
-
         board = Board()
         assert board._legal_move(start, end) is expected
         assert board.state == Board().state
@@ -152,7 +164,6 @@ class TestDefaultBoard:
             ((7, 6), (5, 5), True),
             ((1, 0), (3, 0), True),
             ((1, 0), (2, 0), True),
-
             # invalid moves
             ((1, 4), (4, 4), False),
             ((1, 4), (2, 3), False),
@@ -172,10 +183,11 @@ class TestDefaultBoard:
             ((1, 0), (7, 7), False),
         ],
     )
-    def test_possible_move(self, start: Square, end: Square, expected: bool):
+    def test_possible_move(self, start: Square, end: Square, expected: bool) -> None:
         """Test possible moves on move 1.
-        and that the method does not alter the state."""
 
+        And that the method does not alter the state.
+        """
         board = Board()
         assert board._possible_move(start, end) is expected
         assert board.state == Board().state
@@ -192,7 +204,6 @@ class TestDefaultBoard:
             ((1, 0), (2, 0), True),
             ((6, 0), (4, 0), True),
             ((6, 7), (4, 7), True),
-
             # invalid moves
             ((1, 4), (4, 4), False),
             ((1, 4), (2, 3), False),
@@ -209,9 +220,8 @@ class TestDefaultBoard:
             ((6, 7), (1, 3), False),
         ],
     )
-    def test_pawn_possible_move(self, start: Square, end: Square, expected: bool):
+    def test_pawn_possible_move(self, start: Square, end: Square, expected: bool) -> None:
         """Test Pawn possible moves on move 1."""
-
         board = Board()
         assert board._possible_pawn_move(start, end) is expected
 
@@ -227,14 +237,12 @@ class TestDefaultBoard:
             ((7, 1), (5, 2), True),
             ((7, 6), (5, 7), True),
             ((7, 6), (5, 5), True),
-
             # Knight invalid moves
             ((0, 1), (1, 3), False),
             ((0, 1), (3, 3), False),
             ((0, 6), (1, 4), False),
             ((7, 1), (6, 3), False),
             ((7, 6), (6, 4), False),
-
             # King
             ((0, 4), (1, 4), False),
             ((0, 4), (1, 3), False),
@@ -246,9 +254,8 @@ class TestDefaultBoard:
             ((7, 4), (6, 6), False),
         ],
     )
-    def test_king_knight_possible_move(self, start: Square, end: Square, expected: bool):
+    def test_king_knight_possible_move(self, start: Square, end: Square, expected: bool) -> None:
         """Test King and Knight possible moves on move 1."""
-
         board = Board()
         assert board._possible_king_knight_move(start, end) is expected
 
@@ -266,9 +273,8 @@ class TestDefaultBoard:
             ((7, 5), (5, 5)),
         ],
     )
-    def test_bishop_possible_move(self, start: Square, end: Square):
+    def test_bishop_possible_move(self, start: Square, end: Square) -> None:
         """Test Bishop possible moves on move 1."""
-
         board = Board()
         assert board._possible_bishop_move(start, end) is False
 
@@ -286,30 +292,29 @@ class TestDefaultBoard:
             ((7, 7), (5, 5)),
         ],
     )
-    def test_rook_possible_move(self, start: Square, end: Square):
+    def test_rook_possible_move(self, start: Square, end: Square) -> None:
         """Test Rook possible moves on move 1."""
-
         board = Board()
         assert board._possible_rook_move(start, end) is False
 
     @pytest.mark.parametrize("colour", [Colour.WHITE, Colour.BLACK])
-    def test_has_legal_move(self, colour: Colour):
-        """Test that there exists a legal move on move 1
-        and that the method does not alter the state."""
+    def test_has_legal_move(self, colour: Colour) -> None:
+        """Test that there exists a legal move on move 1.
 
+        And that the method does not alter the state.
+        """
         board = Board()
         assert board._has_legal_move(colour) is True
         assert board.state == Board().state
 
     @pytest.mark.parametrize("colour", [Colour.WHITE, Colour.BLACK])
-    def test_king_checked(self, colour: Colour):
+    def test_king_checked(self, colour: Colour) -> None:
         board = Board()
         assert board._king_checked(colour) is False
 
     @pytest.mark.parametrize("colour", [Colour.WHITE, Colour.BLACK])
-    def test_cannot_long_castle(self, colour: Colour, capfd: CaptureFixture):
+    def test_cannot_long_castle(self, colour: Colour, capfd: CaptureFixture[str]) -> None:
         """Test cannot long castle on move 1 and that the method does not alter the state."""
-
         board = Board()
         assert board._long_castle(colour) is False
         assert board.state == Board().state
@@ -317,31 +322,25 @@ class TestDefaultBoard:
         capfd.readouterr()  # clear stdout
 
     @pytest.mark.parametrize("colour", [Colour.WHITE, Colour.BLACK])
-    def test_cannot_short_castle(self, colour: Colour, capfd: CaptureFixture):
+    def test_cannot_short_castle(self, colour: Colour, capfd: CaptureFixture[str]) -> None:
         """Test cannot short castle on move 1 and that the method does not alter the state."""
-
         board = Board()
         assert board._short_castle(colour) is False
         assert board.state == Board().state
 
         capfd.readouterr()  # clear stdout
 
-    @pytest.mark.parametrize(
-        "colour, expected",
-        [
-            (Colour.WHITE, (0, 4)),
-            (Colour.BLACK, (7, 4)),
-        ],
-    )
-    def test_find_king(self, colour: Colour, expected: Square):
+    @pytest.mark.parametrize("colour, expected", [(Colour.WHITE, (0, 4)), (Colour.BLACK, (7, 4))])
+    def test_find_king(self, colour: Colour, expected: Square) -> None:
         board = Board()
         assert board._find_king(colour) == expected
 
-    def test_request_pawn_promotion_options(self, monkeypatch: MonkeyPatch, capfd: CaptureFixture):
-
+    def test_request_pawn_promotion_options(
+        self, monkeypatch: MonkeyPatch, capfd: CaptureFixture[str]
+    ) -> None:
         # mimic user inputs
         inputs = iter(["h", "p", "help", "q"])
-        monkeypatch.setattr('builtins.input', lambda _: next(inputs))
+        monkeypatch.setattr("builtins.input", lambda _: next(inputs))
 
         board = Board()
         assert board._request_pawn_promotion_option() == _PromotionOption.QUEEN
@@ -366,8 +365,8 @@ class TestDefaultBoard:
         ],
     )
     def test_user_input_notation_to_coordinates(
-        self, notation: str, expected: tuple[Square, Square] | None, capfd: CaptureFixture,
-    ):
+        self, notation: str, expected: tuple[Square, Square] | None, capfd: CaptureFixture[str]
+    ) -> None:
         board = Board()
         assert board._user_input_notation_to_coordinates(notation) == expected
 
@@ -384,14 +383,13 @@ class TestDefaultBoard:
             ((0, 7), "h1"),
         ],
     )
-    def test_square_to_notation(self, square: Square, expected: str):
+    def test_square_to_notation(self, square: Square, expected: str) -> None:
         board = Board()
         assert board._square_to_notation(square) == expected
 
 
 class TestBoardOne:
-    """This class provides tests for the custom board position
-    `board_one` from `conftest.py`."""
+    """Test BoardOne test board."""
 
     @pytest.mark.parametrize(
         "raw_input, turn, expected",
@@ -407,7 +405,6 @@ class TestBoardOne:
             ("a8a1", Colour.BLACK, MoveOutcome.CHECK),
             ("d5e4", Colour.WHITE, MoveOutcome.SUCCESS),
             ("g8h7", Colour.BLACK, MoveOutcome.SUCCESS),
-
             # invalid moves
             ("o-o-o", Colour.WHITE, MoveOutcome.FAILURE),
             ("o-o", Colour.BLACK, MoveOutcome.FAILURE),
@@ -418,17 +415,26 @@ class TestBoardOne:
         ],
     )
     def test_make_move(
-        self, game_one: Chess, raw_input: str, turn: Colour, expected: MoveOutcome, capfd: CaptureFixture,
-    ):
+        self,
+        game_one: Chess,
+        raw_input: str,
+        turn: Colour,
+        expected: MoveOutcome,
+        capfd: CaptureFixture[str],
+    ) -> None:
         board = game_one.board
         assert board.make_move(raw_input, turn) == expected
 
         capfd.readouterr()  # clear stdout
 
-    def test_white_can_short_castle_but_cannot_long_castle(self, game_one: Chess, capfd: CaptureFixture):
-        """Test that white can short castle but cannot long castle;
-        the state of the board is updated correctly."""
+    def test_white_can_short_castle_but_cannot_long_castle(
+        self, game_one: Chess, capfd: CaptureFixture[str]
+    ) -> None:
+        """For Test Board One King castles.
 
+        White can long castle but cannot short castle;
+        the state of the board is updated correctly.
+        """
         board = game_one.board
         assert board._long_castle(Colour.WHITE) is False
         assert board._short_castle(Colour.WHITE) is True
@@ -439,10 +445,14 @@ class TestBoardOne:
 
         capfd.readouterr()  # clear stdout
 
-    def test_black_can_long_castle_but_cannot_short_castle(self, game_one: Chess, capfd: CaptureFixture):
-        """Test that black can long castle but cannot short castle;
-        the state of the board is updated correctly."""
+    def test_black_can_long_castle_but_cannot_short_castle(
+        self, game_one: Chess, capfd: CaptureFixture[str]
+    ) -> None:
+        """For Test Board One King castles.
 
+        Black can long castle but cannot short castle;
+        the state of the board is updated correctly.
+        """
         board = game_one.board
         assert board._short_castle(Colour.BLACK) is False
         assert board._long_castle(Colour.BLACK) is True
@@ -453,13 +463,16 @@ class TestBoardOne:
 
         capfd.readouterr()  # clear stdout
 
-    def test_en_passant_capture(self, game_one: Chess):
-        """Test that a pawn can capture en passant;
-        the start square is empty;
-        the capturing pawn is moved to the target square;
-        the captured pawn is removed from the board;
-        the board is updated correctly."""
+    def test_en_passant_capture(self, game_one: Chess) -> None:
+        """Test en passant capture.
 
+        Test that:
+            A pawn can capture en passant;
+            The start square is empty;
+            The capturing pawn is moved to the target square;
+            The captured pawn is removed from the board;
+            The board is updated correctly.
+        """
         board = game_one.board
         assert board.make_move("e5f6", Colour.WHITE) == MoveOutcome.SUCCESS
         assert board.state[4][4] is None
@@ -467,12 +480,12 @@ class TestBoardOne:
         assert board.state[4][5] is None
         assert board.en_passant_pawn is None
 
-    def test_possible_move_is_not_necessarily_legal(self, game_one: Chess):
-        """Test that a possible move is not necessarily legal;
-        the board is not updated.
+    def test_possible_move_is_not_necessarily_legal(self, game_one: Chess) -> None:
+        """Test that a possible move is not necessarily legal.
 
-        Black king could technically move to f7, but it would be under check."""
-
+        And that the board is not updated. Black king could technically move to f7,
+        but it would be under check.
+        """
         board = game_one.board
         assert board._possible_move((7, 4), (6, 5)) is True
         assert board._legal_move((7, 4), (6, 5)) is False
@@ -488,28 +501,33 @@ class TestBoardOne:
             ("h8", (7, 7), "r"),
             ("h8", (7, 7), "b"),
             ("h8", (7, 7), "n"),
-        ]
+        ],
     )
     def test_pawn_promotion(
         self,
         game_one: Chess,
         monkeypatch: MonkeyPatch,
-        capfd: CaptureFixture,
+        capfd: CaptureFixture[str],
         end_square_raw: str,
         end_square: Square,
         user_input: str,
-    ):
-        """Test that a pawn promotion is handled correctly;
-        the pawn is removed from the board;
-        the correct piece is placed on the board;
-        the black king is in check after h7g8 capture and promotion
-            to either a Queen or Rook."""
+    ) -> None:
+        """Test pawn promotion.
 
-        monkeypatch.setattr('builtins.input', lambda _: user_input)
+        Test that:
+            The pawn is removed from the board;
+            The correct piece is placed on the board;
+            The black king is in check after h7g8 capture and promotion
+                to either a Queen or Rook.
+        """
+        monkeypatch.setattr("builtins.input", lambda _: user_input)
 
         board = game_one.board
 
-        assert board.make_move(f"h7{end_square_raw}", Colour.WHITE) in {MoveOutcome.SUCCESS, MoveOutcome.CHECK}
+        assert board.make_move(f"h7{end_square_raw}", Colour.WHITE) in {
+            MoveOutcome.SUCCESS,
+            MoveOutcome.CHECK,
+        }
         assert board.state[6][7] is None
 
         end_rank, end_file = end_square
@@ -528,37 +546,39 @@ class TestBoardOne:
 
 
 class TestBoardTwo:
-    """This class provides tests for the custom board position
-    `board_two` from `conftest.py`."""
+    """Test BoardTwo test board."""
 
-    def test_capturing_king_raises_value_error(self, game_two: Chess):
+    def test_capturing_king_raises_value_error(self, game_two: Chess) -> None:
         """Test that capturing the king raises a ValueError.
 
-        Note: capturing the king must never be an option in the game.
-        If a player is in check and the game has not ended,
-        it is their move, and they can get out of check."""
-
+        Note:
+            Capturing the king must never be an option in the game.
+            If a player is in check and the game has not ended,
+            it is their move, and they can get out of check.
+        """
         board = game_two.board
         with pytest.raises(ValueError):
             board.make_move("g5f7", Colour.WHITE)
 
     def test_attempting_to_capture_king_with_illegal_move_does_not_raise_value_error(
-        self, game_two, capfd: CaptureFixture,
-    ):
+        self, game_two: Chess, capfd: CaptureFixture[str]
+    ) -> None:
         board = game_two.board
         board.make_move("f7g8", Colour.BLACK)
         assert board.make_move("c8g8", Colour.WHITE) == MoveOutcome.FAILURE
 
         capfd.readouterr()  # clear stdout
 
-    def test_checkmate_sequence_of_moves(self, game_two: Chess, capfd: CaptureFixture):
+    def test_checkmate_sequence_of_moves(
+        self, game_two: Chess, capfd: CaptureFixture[str]
+    ) -> None:
         board = game_two.board
 
         moves = ["f7g8", "a2a3", "f2h2"]
         turns = [Colour.BLACK, Colour.WHITE, Colour.BLACK]
         outcomes = [MoveOutcome.SUCCESS, MoveOutcome.SUCCESS, MoveOutcome.CHECKMATE]
 
-        for move, turn, outcome in zip(moves, turns, outcomes):
+        for move, turn, outcome in zip(moves, turns, outcomes, strict=False):
             assert board.make_move(move, turn) == outcome
 
         capfd.readouterr()  # clear stdout

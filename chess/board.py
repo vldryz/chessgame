@@ -649,7 +649,7 @@ class Board:
 
             if option == _PromotionOption.INVALID:
                 print(
-                    "Please select a valid promotion option." "Type 'help' for help message.",
+                    "Please select a valid promotion option.Type 'help' for help message.",
                     sep="\n",
                     end="\n\n",
                 )
@@ -694,7 +694,7 @@ class Board:
         # Check if the start and end files are valid
         if not {file_start, file_end}.issubset(set(files)):
             print(
-                "Invalid Move: File selection is invalid." "Type 'help' for help message.",
+                "Invalid Move: File selection is invalid.Type 'help' for help message.",
                 sep="\n",
                 end="\n\n",
             )
@@ -704,7 +704,7 @@ class Board:
         for rank in {rank_start, rank_end}:
             if not rank.isdigit() or int(rank) not in range(1, 9):
                 print(
-                    "Invalid Move: Rank selection is invalid." "Type 'help' for help message.",
+                    "Invalid Move: Rank selection is invalid.Type 'help' for help message.",
                     sep="\n",
                     end="\n\n",
                 )

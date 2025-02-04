@@ -49,7 +49,7 @@ class Chess:
 
         while True:
             raw_input = request_input(
-                f"{self.turn} to move on move {self.move_number}.\n" f"Enter your move: "
+                f"{self.turn} to move on move {self.move_number}.\nEnter your move: "
             )
 
             if (command := _GameCommand(raw_input)) != _GameCommand.MOVE:
@@ -73,8 +73,7 @@ class Chess:
         if command == _GameCommand.HELP:
             print(
                 "Input Options:",
-                "- a move in the format 'start_square + end_square', "
-                "e.g. 'e2e4' to move a piece.",
+                "- a move in the format 'start_square + end_square', e.g. 'e2e4' to move a piece.",
                 "- 'o-o' to short castle.",
                 "- 'o-o-o' to long castle.",
                 "- 'exit' to exit the game.",
@@ -113,7 +112,7 @@ class Chess:
         while True:
             command = _GameCommand(
                 request_input(
-                    "Would you like to play again? [yes/no].\n" "For other options, type 'help': "
+                    "Would you like to play again? [yes/no].\nFor other options, type 'help': "
                 )
             )
 
@@ -141,9 +140,7 @@ class Chess:
                 continue
 
             else:
-                print(
-                    "Invalid input." "For a list of commands, type 'help'.", sep="\n", end="\n\n"
-                )
+                print("Invalid input.For a list of commands, type 'help'.", sep="\n", end="\n\n")
                 continue
 
     def _handle_move_outcome(self, outcome: MoveOutcome) -> None:
