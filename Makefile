@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-SOURCES ?= chess/
+SOURCES ?= chess/ tests/
 
 lint:
 	ruff format $(SOURCES) --check
@@ -14,7 +14,7 @@ format:
 fix:
 	ruff check $(SOURCES) --fix
 
-unsafe_fixes:
+unsafe-fixes:
 	ruff check $(SOURCES) --fix  --unsafe-fixes
 
 test:
