@@ -24,10 +24,13 @@ jobs:
       - name: Create venv
         run: |
           uv sync --compile-bytecode
-          source .venv/bin/activate
 
       - name: Run linter
-        run: make lint
+        run: |
+          source .venv/bin/activate
+          make lint
 
       - name: Run tests
-        run: make test
+        run: |
+          source .venv/bin/activate
+          make test
