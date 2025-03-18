@@ -178,6 +178,7 @@ class Board:
         end_rank, end_file = end
 
         piece = self.state[start_rank][start_file]
+
         if not piece:
             print(
                 f"Invalid Move: There is no piece at {self._square_to_notation(start)}.",
