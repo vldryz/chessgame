@@ -12,11 +12,11 @@ git clone https://github.com/vldryz/chessgame.git
 ## How to play
 
 1. **Execution** \
-Run `main.py` in terminal or an IDE of your choice.\
+Run `main.py` in terminal or an IDE of your choice.
 <img src="/img/board_default.jpeg" alt="Default Chess Board" width="400" />
 
 2. **Piece movement** \
-To move a piece enter \*start position\* + \*end position\*, e.g. 'e2e4' will move the Pawn from e2 square to e4 square.\
+To move a piece enter \*start position\* + \*end position\*, e.g. 'e2e4' will move the Pawn from e2 square to e4 square.
 <img src="/img/board_e2e4.jpeg" alt="Chess Board after move e2e4" width="400" />
 
 3. **Castling** \
