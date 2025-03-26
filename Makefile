@@ -3,18 +3,18 @@ SHELL := /bin/bash
 
 .PHONY: lint
 lint:  ## Run lint checks
-	ruff format --check
-	ruff check --no-fix
-	mypy
+	uv run ruff format --check
+	uv run ruff check --no-fix
+	uv run mypy
 
 .PHONY: fmt
 fmt:  ## Run formatting
-	ruff format
-	ruff check
+	uv run ruff format
+	uv run ruff check
 
 .PHONY: test
 test:  ## Run tests
-	pytest tests/
+	uv run pytest tests/
 
 .PHONY: clean
 clean:  ## Clean up caches and build artifacts

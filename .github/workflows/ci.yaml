@@ -21,16 +21,10 @@ jobs:
         with:
           python-version-file: "pyproject.toml"
 
-      - name: Create venv
-        run: |
-          uv sync --compile-bytecode
-
       - name: Run linter
         run: |
-          source .venv/bin/activate
           make lint
 
       - name: Run tests
         run: |
-          source .venv/bin/activate
           make test
