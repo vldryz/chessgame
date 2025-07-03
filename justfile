@@ -27,7 +27,7 @@ typecheck:
 # Run tests
 [group('test')]
 test:
-    uv run pytest tests/
+    uv run pytest
 
 # Run same checks as in CI
 [group('CI')]
