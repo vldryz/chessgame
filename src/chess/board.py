@@ -737,6 +737,9 @@ class Board:
 
         return self.state == other.state and self.en_passant_pawn == other.en_passant_pawn
 
+    def __hash__(self) -> int:
+        return hash((self.state, self.en_passant_pawn))
+
     def __str__(self) -> str:
         return (
             (
