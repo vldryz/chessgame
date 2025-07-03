@@ -1,6 +1,6 @@
 [project]
 name = "chess"
-version = "0.1.2"
+version = "0.1.0"
 description = "Chess in python."
 requires-python = ">=3.13"
 readme = "README.md"
@@ -13,18 +13,19 @@ dependencies = []
 
 [dependency-groups]
 dev = [
-    "mypy>=1.15.0",
-    "pytest>=8.3.4",
-    "pytest-mock>=3.14.0",
-    "ruff>=0.11.0",
+    "mypy>=1.16.1",
+    "pytest>=8.4.1",
+    "pytest-mock>=3.14.1",
+    "ruff>=0.12.2",
+    "ty>=0.0.1a13",
 ]
 
 [tool.uv]
-required-version = ">=0.6.0"
+required-version = ">=0.7.19"
 
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["uv_build>=0.7.19,<0.8.0"]
+build-backend = "uv_build"
 
 [tool.ruff]
 line-length = 99
@@ -101,3 +102,4 @@ max-complexity = 10
 files = ["src/chess", "tests"]
 strict = true
 show_error_codes = true
+enable_error_code = ["deprecated"]
