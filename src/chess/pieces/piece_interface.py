@@ -35,6 +35,10 @@ class Piece(ABC):
             self.colour == other.colour and self.name == other.name and self.moved == other.moved
         )
 
+    @final
+    def __hash__(self) -> int:
+        return hash((self.colour, self.name, self.moved))
+
     @abstractmethod
     def moves_to_consider(self, start: Square) -> list[Square]:
         """The method to get a list of moves to consider for a piece.
