@@ -19,6 +19,9 @@ dev = [
     "ruff>=0.12.7",
 ]
 
+[project.scripts]
+chess = "chess.__main__:main"
+
 [tool.uv]
 required-version = ">=0.8.4"
 
