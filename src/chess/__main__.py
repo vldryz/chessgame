@@ -2,5 +2,11 @@
 
 from chess import Chess
 
-if __name__ == "__main__":
+
+def main() -> None:
+    """Main."""
     Chess().play()
+
+
+if __name__ == "__main__":
+    main()
