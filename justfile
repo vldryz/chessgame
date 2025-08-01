@@ -2,11 +2,11 @@
 default:
     @just --list
 
-alias fmt := format
+alias format := fmt
 
 # Run formatting
 [group('QA')]
-format:
+fmt:
     uv run ruff format
 
 # Run lint checks
@@ -19,10 +19,15 @@ lint:
 unsafe-fix:
     uv run ruff check --fix --unsafe-fixes
 
-# Run type checking
+# Run type checking with mypy
 [group('QA')]
-typecheck:
+mypy:
     uv run mypy
+
+# Run type checking with ty
+[group('QA')]
+ty:
+    uvx ty check
 
 # Run tests
 [group('test')]
@@ -31,12 +36,17 @@ test:
 
 # Run same checks as in CI
 [group('CI')]
-ci-check: format lint typecheck test
+ci-check: lint fmt mypy test
 
 # Clean up caches and build artifacts
 [group('misc')]
 clean:
     @rm -rf .mypy_cache/
     @rm -rf .pytest_cache/
-    @ruff clean
+    @ruff clean --quiet
     @find . -type f -name '*.py[co]' -delete -or -type d -name __pycache__ -exec rm -r {} +
+
+# Format the justfile itself
+[group('misc')]
+format-justfile:
+    just --fmt --unstable
