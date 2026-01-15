@@ -2,31 +2,31 @@
 name = "chess"
 version = "0.1.0"
 description = "Chess in python."
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 readme = "README.md"
 license = { file = "LICENSE" }
 classifiers = [
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
 dependencies = []
 
 [dependency-groups]
 dev = [
-    "mypy>=1.17.1",
-    "pytest>=8.4.1",
-    "pytest-mock>=3.14.1",
-    "ruff>=0.12.7",
+    "ty>=0.0.12",
+    "pytest>=9.0.2",
+    "pytest-mock>=3.15.1",
+    "ruff>=0.14.12",
 ]
 
 [project.scripts]
 chess = "chess.__main__:main"
 
 [tool.uv]
-required-version = ">=0.8.4"
+required-version = ">=0.9.25"
 
 [build-system]
-requires = ["uv_build>=0.8.4,<0.9.0"]
+requires = ["uv_build>=0.9.25,<0.10.0"]
 build-backend = "uv_build"
 
 [tool.ruff]
