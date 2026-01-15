@@ -19,15 +19,10 @@ lint:
 unsafe-fix:
     uv run ruff check --fix --unsafe-fixes
 
-# Run type checking with mypy
-[group('QA')]
-mypy:
-    uv run mypy
-
 # Run type checking with ty
 [group('QA')]
 ty:
-    uvx ty check
+    ty check
 
 # Run tests
 [group('test')]
@@ -36,7 +31,7 @@ test:
 
 # Run same checks as in CI
 [group('CI')]
-ci-check: lint fmt mypy test
+ci-check: lint fmt ty test
 
 # Clean up caches and build artifacts
 [group('misc')]
