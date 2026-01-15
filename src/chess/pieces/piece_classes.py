@@ -1,10 +1,13 @@
 """This module provides classes for chess pieces."""
 
 from itertools import product
-from typing import final, override
+from typing import TYPE_CHECKING, final, override
 
-from chess.colour_and_aliases import Colour, Square
+from chess.colour_and_aliases import Colour
 from chess.pieces.piece_interface import Piece
+
+if TYPE_CHECKING:
+    from chess.colour_and_aliases import Square
 
 
 @final

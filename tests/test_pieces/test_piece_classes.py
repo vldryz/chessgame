@@ -1,9 +1,14 @@
 """This module provides tests for chess pieces."""
 
+from typing import TYPE_CHECKING
+
 import pytest
 
-from chess.colour_and_aliases import Colour, Square
+from chess.colour_and_aliases import Colour
 from chess.pieces import Bishop, King, Knight, Pawn, Queen, Rook
+
+if TYPE_CHECKING:
+    from chess.colour_and_aliases import Square
 
 
 class TestPawn:

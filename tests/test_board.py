@@ -1,12 +1,18 @@
 """This module provides tests for the Board class."""
 
-import pytest
-from pytest import CaptureFixture, MonkeyPatch
+from typing import TYPE_CHECKING
 
-from chess import Chess
+import pytest
+
 from chess.board import Board, MoveOutcome, _PromotionOption, _PromotionPiece
-from chess.colour_and_aliases import Colour, Square
+from chess.colour_and_aliases import Colour
 from chess.pieces.piece_interface import Piece
+
+if TYPE_CHECKING:
+    from pytest import CaptureFixture, MonkeyPatch
+
+    from chess import Chess
+    from chess.colour_and_aliases import Square
 
 
 class TestDefaultBoard:
