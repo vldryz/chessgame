@@ -2,13 +2,16 @@
 
 import os
 from tempfile import TemporaryDirectory
+from typing import TYPE_CHECKING
 
 import pytest
-from pytest import CaptureFixture, MonkeyPatch
-from pytest_mock import MockerFixture
 
 from chess import Chess
 from chess.board import MoveOutcome
+
+if TYPE_CHECKING:
+    from pytest import CaptureFixture, MonkeyPatch
+    from pytest_mock import MockerFixture
 
 
 class TestDefaultChess:
